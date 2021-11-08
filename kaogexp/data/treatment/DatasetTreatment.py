@@ -3,13 +3,17 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 
+from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
+
+SUBSTITUTO_NA = np.nan
 
 
 class DatasetTreatment(TreatmentAbstract):
-    SUBSTITUTO_NA = np.nan
 
-    def __init__(self, nomes_colunas_originais: pd.Index, nomes_colunas_encoded: pd.Index):
+    def __init__(self, dataset: pd.DataFrame):
+        nomes_colunas_originais = dataset.columns
+        nomes_colunas_encoded = pd.get_dummies(dataset.drop(NOME_COLUNA_Y, axis=1, errors='ignore')).columns
         super().__init__(nomes_colunas_originais, nomes_colunas_encoded)
 
     def encode(self, instancia: pd.Series) -> pd.Series:
@@ -31,7 +35,7 @@ class DatasetTreatment(TreatmentAbstract):
         :return: Conjunto de dados tratado, sem valores faltantes.
         :rtype: pd.DataFrame
         """
-        dataset = dataset.replace(valores_na, DatasetTreatment.SUBSTITUTO_NA)
+        dataset = dataset.replace(valores_na, SUBSTITUTO_NA)
         return DatasetTreatment._interpolar_na(dataset)
 
     @staticmethod

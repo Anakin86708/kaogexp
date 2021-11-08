@@ -25,7 +25,7 @@ class TreatmentAbstract(ABC):
     def decode(self, instancia: pd.Series) -> pd.Series:
         pass
 
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def tratar_na(dataset: pd.DataFrame, valores_na: Tuple[str, ...]) -> pd.DataFrame:
         pass

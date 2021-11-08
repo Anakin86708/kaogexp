@@ -7,4 +7,4 @@ class TreatmentFactory:
     @staticmethod
     def create(type: str, **kwargs) -> TreatmentAbstract:
         if type == "DatasetTreatment":
-            return DatasetTreatment(kwargs)
+            return DatasetTreatment(kwargs['dataset'])

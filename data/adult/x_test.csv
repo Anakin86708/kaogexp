@@ -1,0 +1,31 @@
+age,workclass   ,fnlwgt,education   ,education-num,marital-status    ,occupation       ,relationship  ,race              ,sex   ,capital-gain,capital-loss,hours-per-week,native-country
+58 ,Private     ,233193,HS-grad     ,9            ,Widowed           ,Adm-clerical     ,Not-in-family ,White             ,Female,0           ,0           ,27            ,United-States
+22 ,Private     ,139190,HS-grad     ,9            ,Never-married     ,Craft-repair     ,Own-child     ,White             ,Male  ,0           ,0           ,50            ,United-States
+53 ,Private     ,355802,Some-college,10           ,Widowed           ,Sales            ,Unmarried     ,White             ,Female,0           ,0           ,30            ,United-States
+52 ,Self-emp-inc,181855,Prof-school ,15           ,Married-civ-spouse,Prof-specialty   ,Husband       ,Other             ,Male  ,99999       ,0           ,65            ,United-States
+56 ,Private     ,70720 ,12th        ,8            ,Married-civ-spouse,Prof-specialty   ,Husband       ,White             ,Male  ,0           ,0           ,40            ,United-States
+22 ,Private     ,203182,Bachelors   ,13           ,Never-married     ,Exec-managerial  ,Other-relative,White             ,Female,0           ,0           ,20            ,United-States
+33 ,Private     ,182401,10th        ,6            ,Never-married     ,Adm-clerical     ,Not-in-family ,Black             ,Male  ,0           ,0           ,40            ,United-States
+31 ,Private     ,163003,Assoc-acdm  ,12           ,Never-married     ,Prof-specialty   ,Other-relative,Asian-Pac-Islander,Female,0           ,0           ,40            ,Philippines
+32 ,Private     ,172415,HS-grad     ,9            ,Never-married     ,Other-service    ,Unmarried     ,Black             ,Female,0           ,0           ,40            ,United-States
+46 ,State-gov   ,295791,Assoc-voc   ,11           ,Divorced          ,Adm-clerical     ,Unmarried     ,White             ,Female,0           ,0           ,38            ,United-States
+29 ,Private     ,146949,Assoc-voc   ,11           ,Married-civ-spouse,Prof-specialty   ,Husband       ,White             ,Male  ,0           ,0           ,43            ,United-States
+39 ,Private     ,125550,HS-grad     ,9            ,Married-civ-spouse,Adm-clerical     ,Wife          ,White             ,Female,0           ,0           ,40            ,United-States
+35 ,Private     ,210844,Assoc-acdm  ,12           ,Married-civ-spouse,Exec-managerial  ,Husband       ,White             ,Male  ,0           ,0           ,40            ,Puerto-Rico
+23 ,Private     ,205865,Bachelors   ,13           ,Never-married     ,Exec-managerial  ,Own-child     ,White             ,Male  ,0           ,0           ,28            ,United-States
+37 ,Private     ,188576,Doctorate   ,16           ,Married-civ-spouse,Prof-specialty   ,Husband       ,Asian-Pac-Islander,Male  ,0           ,0           ,40            ,?
+38 ,Local-gov   ,745768,Some-college,10           ,Divorced          ,Exec-managerial  ,Unmarried     ,Black             ,Female,0           ,0           ,45            ,United-States
+65 ,Private     ,271092,Some-college,10           ,Divorced          ,Adm-clerical     ,Unmarried     ,White             ,Female,0           ,0           ,40            ,?
+47 ,Private     ,94809 ,Assoc-voc   ,11           ,Married-civ-spouse,Exec-managerial  ,Wife          ,White             ,Female,0           ,0           ,45            ,United-States
+42 ,Local-gov   ,226020,HS-grad     ,9            ,Separated         ,Other-service    ,Not-in-family ,Black             ,Female,0           ,0           ,60            ,?
+57 ,Private     ,199572,11th        ,7            ,Married-civ-spouse,Machine-op-inspct,Husband       ,White             ,Male  ,0           ,0           ,40            ,United-States
+28 ,Private     ,338376,Some-college,10           ,Married-civ-spouse,Adm-clerical     ,Husband       ,White             ,Male  ,0           ,0           ,50            ,United-States
+27 ,Private     ,390657,HS-grad     ,9            ,Married-civ-spouse,Handlers-cleaners,Husband       ,Black             ,Male  ,0           ,0           ,40            ,United-States
+19 ,Private     ,375114,HS-grad     ,9            ,Never-married     ,Craft-repair     ,Not-in-family ,White             ,Female,0           ,0           ,40            ,United-States
+41 ,Private     ,394669,Bachelors   ,13           ,Never-married     ,Prof-specialty   ,Not-in-family ,White             ,Female,0           ,1741        ,40            ,United-States
+56 ,Private     ,147202,Some-college,10           ,Divorced          ,Adm-clerical     ,Not-in-family ,White             ,Female,0           ,0           ,45            ,Germany
+44 ,Private     ,222978,HS-grad     ,9            ,Divorced          ,Sales            ,Not-in-family ,White             ,Female,0           ,1504        ,40            ,United-States
+58 ,Private     ,104945,9th         ,5            ,Married-civ-spouse,Handlers-cleaners,Husband       ,Black             ,Male  ,0           ,0           ,60            ,United-States
+24 ,State-gov   ,43475 ,Bachelors   ,13           ,Never-married     ,Prof-specialty   ,Not-in-family ,White             ,Male  ,0           ,0           ,40            ,United-States
+29 ,Private     ,31360 ,Some-college,10           ,Never-married     ,Farming-fishing  ,Own-child     ,White             ,Male  ,0           ,0           ,40            ,United-States
+21 ,Private     ,165107,Some-college,10           ,Never-married     ,Priv-house-serv  ,Own-child     ,White             ,Female,0           ,0           ,40            ,United-States

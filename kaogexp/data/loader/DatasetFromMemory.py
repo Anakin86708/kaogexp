@@ -1,0 +1,18 @@
+from typing import Tuple
+
+import pandas as pd
+
+from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
+
+
+class DatasetFromMemory(DatasetAbstract):
+    def __init__(self,
+                 data: pd.DataFrame,
+                 colunas_categoricas: pd.Index,
+                 valores_na: Tuple[str, ...] = ('?'),
+                 tratar_na: bool = True,
+                 normalizador: str = "MinMaxNormalizer",
+                 normalizar: bool = True,
+                 tratador: str = "DatasetTreatment"
+                 ):
+        super().__init__(data, colunas_categoricas, valores_na, tratar_na, normalizador, normalizar, tratador)
