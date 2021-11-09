@@ -13,9 +13,9 @@ class NormalizerAbstract(ABC):
         return self._nomes_colunas_numericas
 
     @abstractmethod
-    def normalizar(self, instancia: pd.Series) -> pd.Series:
+    def transform(self, instancia: pd.Series) -> pd.Series:
         pass
 
     @abstractmethod
-    def reverter(self, instancia: pd.Series) -> pd.Series:
+    def inverse_transform(self, instancia: pd.Series) -> pd.Series:
         pass

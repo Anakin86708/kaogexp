@@ -7,16 +7,16 @@ from kaogexp.data.normalizer.NormalizerAbstract import NormalizerAbstract
 
 
 class MinMaxNormalizer(NormalizerAbstract):
-    normalizador = MinMaxScaler()
+    normalizer = MinMaxScaler()
 
     def __init__(self, x: pd.DataFrame, nomes_colunas_numericas: pd.Index):
         super().__init__(nomes_colunas_numericas)
         self._data = x
-        self.normalizador.fit(x.loc[:, self.nomes_colunas_numericas])
+        self.normalizer.fit(x.loc[:, self.nomes_colunas_numericas])
 
-    def normalizar(self, instancia: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:
+    def transform(self, instancia: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:
         """
-        Normaliza uma instância utilizando o normalizador, já preparado nesta classe.
+        Normaliza uma instância utilizando o normalizer, já preparado nesta classe.
 
         :param instancia: Instância a ser normalizada, representando uma linha do conjunto de dados.
         :type instancia: Union[pd.Series, pd.DataFrame]
@@ -25,21 +25,26 @@ class MinMaxNormalizer(NormalizerAbstract):
         :raise: ValueError: Se o tipo de `instancia` não for um pd.Series ou pd.DataFrame.
         """
         if isinstance(instancia, pd.Series):
-            return self.normalizar(pd.DataFrame([instancia])).iloc[0]
+            return self.transform(pd.DataFrame([instancia])).iloc[0]
 
         elif isinstance(instancia, pd.DataFrame):
-            instancia[self.nomes_colunas_numericas] = self.normalizador.transform(
+            instancia[self.nomes_colunas_numericas] = self.normalizer.transform(
                 instancia[self.nomes_colunas_numericas])
         return instancia
 
-    def reverter(self, instancia: pd.Series) -> pd.Series:
+    def inverse_transform(self, instancia: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:
         """
         Reverte a normalização de uma instância.
 
-        :param instancia: Instância a ser revertida, representando uma linha do conjunto de dados.
-        :type instancia: pd.Series
+        :param instancia: Instância a ser revertida, podendo representar uma linha do conjunto de dados ou todo um
+        conjunto de linhas em um `pd.DataFrame`.
+        :type instancia: Union[pd.Series, pd.DataFrame]
         :return: Instância revertida, contendo valores condizentes com os dados originais.
-        :rtype: pd.Series
+        :rtype: Union[pd.Series, pd.DataFrame]
         """
-        # TODO: garantir que o formato de saída ainda seja a Series correta
-        return self.normalizador.inverse_transform(instancia.loc[self.nomes_colunas_numericas].values.reshape(1, -1))[0]
+        if isinstance(instancia, pd.Series):
+            return self.inverse_transform(pd.DataFrame([instancia])).iloc[0]
+        elif isinstance(instancia, pd.DataFrame):
+            instancia[self.nomes_colunas_numericas] = self.normalizer.inverse_transform(
+                instancia[self.nomes_colunas_numericas])
+        return instancia

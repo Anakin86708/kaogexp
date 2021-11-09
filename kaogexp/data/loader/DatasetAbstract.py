@@ -65,7 +65,7 @@ class DatasetAbstract(ABC):
     def x(self, normalizado: bool = True, encoded: bool = True) -> pd.DataFrame:
         x: pd.DataFrame = self._dataset.drop(NOME_COLUNA_Y, axis=1)
         if normalizado:
-            x.apply(self._normalizador.normalizar, inplace=True)
+            x.apply(self._normalizador.transform, inplace=True)
         if encoded:
             x.apply(self._tratador.encode, inplace=True)
         return x
