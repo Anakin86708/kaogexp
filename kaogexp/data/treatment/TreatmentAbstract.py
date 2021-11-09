@@ -19,13 +19,13 @@ class TreatmentAbstract(ABC):
 
     @abstractmethod
     def encode(self, instancia: pd.Series) -> pd.Series:
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def decode(self, instancia: pd.Series) -> pd.Series:
-        pass
+        raise NotImplementedError
 
     @staticmethod
     @abstractmethod
     def tratar_na(dataset: pd.DataFrame, valores_na: Tuple[str, ...]) -> pd.DataFrame:
-        pass
+        raise NotImplementedError

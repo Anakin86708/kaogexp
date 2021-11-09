@@ -14,8 +14,8 @@ class NormalizerAbstract(ABC):
 
     @abstractmethod
     def transform(self, instancia: pd.Series) -> pd.Series:
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def inverse_transform(self, instancia: pd.Series) -> pd.Series:
-        pass
+        raise NotImplementedError
