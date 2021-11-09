@@ -4,9 +4,14 @@ import pandas as pd
 from sklearn.datasets import load_iris
 
 from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
+from test.util import Data
 
 
 class DatasetFromMemoryTest(unittest.TestCase):
+
+    def __init__(self, *args, **kwargs):
+
+        super().__init__(*args, **kwargs)
 
     def test_create_instance(self):
         self.create_new_instance_iris()
@@ -28,10 +33,8 @@ class DatasetFromMemoryTest(unittest.TestCase):
     ################
 
     @property
-    def adult_dataset(self):
-        if not hasattr(self, '_adult_dataset'):
-            self._adult_dataset = self._download_adult_dataset()
-        return self._adult_dataset
+    def adult_dataset(self) -> pd.DataFrame:
+        return Data.adult_dataset()
 
     @property
     def iris_instance(self):
@@ -62,17 +65,6 @@ class DatasetFromMemoryTest(unittest.TestCase):
         df[object__columns] = df[object__columns].astype('category')
         colunas_categoricas = df.drop('target', axis=1, errors='ignore').select_dtypes(['category', 'object']).columns
         return DatasetFromMemory(df, colunas_categoricas)
-
-    @staticmethod
-    def _download_adult_dataset():
-        columns = ['age', 'workclass', 'fnlwgt', 'education', 'education-num', 'marital-status', 'occupation',
-                   'relationship', 'race', 'sex', 'capital-gain', 'capital-loss', 'hours-per-week', 'native-country',
-                   'target'
-                   ]
-        print('Getting adult dataset, please stand by...')
-        df = pd.read_csv('https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data', names=columns)
-        print('OK')
-        return df
 
 
 if __name__ == '__main__':

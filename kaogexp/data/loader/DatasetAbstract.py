@@ -40,9 +40,10 @@ class DatasetAbstract(ABC):
         self._normalizador = None
         if normalizar:
             x = self.x(False, False)
-            nomes_colunas_numericas = x.drop(self._nomes_colunas_categoricas, axis=1).columns
-            self._normalizador: NormalizerAbstract = NormalizerFactory.create(normalizador, x=x,
-                                                                              nomes_colunas_numericas=nomes_colunas_numericas)
+            nomes_cols_num = x.drop(self._nomes_colunas_categoricas, axis=1).columns
+            self._normalizador: NormalizerAbstract = NormalizerFactory.create(normalizador,
+                                                                              x=x,
+                                                                              nomes_colunas_numericas=nomes_cols_num)
             # TODO: aplicar a normalizacao no dataset
 
     @property
