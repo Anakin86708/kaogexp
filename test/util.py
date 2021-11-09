@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.datasets import load_iris
 
 
 class Data:
@@ -20,3 +21,11 @@ class Data:
         if Data._adult_dataset is None:
             Data._adult_dataset = Data._download_adult_dataset()
         return Data._adult_dataset
+
+    @staticmethod
+    def iris_dataset():
+        data = load_iris()
+        df = pd.DataFrame(data.data, columns=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'])
+        df['target'] = pd.Categorical.from_codes(data.target, data.target_names)
+        colunas_categoricas = df.drop('target', axis=1, errors='ignore').select_dtypes(['category', 'object']).columns
+        return colunas_categoricas, df

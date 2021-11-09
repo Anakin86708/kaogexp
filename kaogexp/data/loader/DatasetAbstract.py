@@ -1,4 +1,5 @@
 from abc import ABC
+from functools import cached_property
 from typing import Tuple
 
 import pandas as pd
@@ -62,15 +63,22 @@ class DatasetAbstract(ABC):
     def nomes_colunas_categoricas(self):
         return self._nomes_colunas_categoricas.copy()
 
+    @cached_property
+    def nomes_colunas_numericas(self):
+        return self.x(False, False).drop(self._nomes_colunas_categoricas, axis=1).copy().columns
+
     def x(self, normalizado: bool = True, encoded: bool = True) -> pd.DataFrame:
-        x: pd.DataFrame = self._dataset.drop(NOME_COLUNA_Y, axis=1)
+        x: pd.DataFrame = self.dataset.drop(NOME_COLUNA_Y, axis=1)
         if normalizado:
             x.apply(self._normalizador.transform, inplace=True)
         if encoded:
             x.apply(self._tratador.encode, inplace=True)
         return x
 
-    def _atribuir_colunas_categoricas(self):
+    def y(self) -> pd.Series:
+        return self.dataset[NOME_COLUNA_Y].copy()
+
+    def _atribuir_colunas_categoricas(self) -> None:
         """Define as colunas necessárias com o tipo adequado de categórico do Pandas"""
         colunas_categoricas = self._nomes_colunas_categoricas
         self._dataset[colunas_categoricas] = self._dataset[colunas_categoricas].astype("category")

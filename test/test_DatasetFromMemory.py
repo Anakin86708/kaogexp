@@ -1,7 +1,6 @@
 import unittest
 
 import pandas as pd
-from sklearn.datasets import load_iris
 
 from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from test.util import Data
@@ -28,6 +27,24 @@ class DatasetFromMemoryTest(unittest.TestCase):
         difference = self.adult_instance.nomes_colunas_categoricas.difference(cat_cols)
         self.assertTrue(len(difference) == 0, f"No match between categorical columns at adult dataset: {difference}")
 
+    def test_numerical_columns(self):
+        # Iris
+        index = pd.Index(['sepal_length', 'sepal_width', 'petal_length', 'petal_width'])
+        pd.testing.assert_index_equal(self.iris_instance.nomes_colunas_numericas, index)
+
+        # Adult
+        index = pd.Index(['age', 'fnlwgt', 'education-num', 'capital-gain', 'capital-loss', 'hours-per-week'])
+        pd.testing.assert_index_equal(self.adult_instance.nomes_colunas_numericas, index)
+
+    def test_y_column(self):
+        # Iris
+        self.assertEqual(self.iris_instance.y().name, 'target')
+        self.assertTrue(self.iris_instance.y().shape == (150,))
+
+        # Adult
+        self.assertEqual(self.adult_instance.y().name, 'target')
+        self.assertTrue(self.adult_instance.y().shape == (32561,))
+
     ################
     # Util methods #
     ################
@@ -50,10 +67,7 @@ class DatasetFromMemoryTest(unittest.TestCase):
 
     @staticmethod
     def create_new_instance_iris():
-        data = load_iris()
-        df = pd.DataFrame(data.data, columns=data.feature_names)
-        df['target'] = pd.Categorical.from_codes(data.target, data.target_names)
-        colunas_categoricas = df.drop('target', axis=1, errors='ignore').select_dtypes(['category', 'object']).columns
+        colunas_categoricas, df = Data.iris_dataset()
         return DatasetFromMemory(df, colunas_categoricas)
 
     def create_new_instance_adult(self):
