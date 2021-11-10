@@ -5,6 +5,6 @@ from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
 class TreatmentFactory:
 
     @staticmethod
-    def create(type: str, **kwargs) -> TreatmentAbstract:
-        if type == "DatasetTreatment":
+    def create(type_: str, **kwargs) -> TreatmentAbstract:
+        if type_ == "DatasetTreatment":
             return DatasetTreatment(kwargs['dataset'])

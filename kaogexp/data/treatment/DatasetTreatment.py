@@ -43,6 +43,7 @@ class DatasetTreatment(TreatmentAbstract):
         """Interpola os valores faltantes de uma instância.
         Para valores categóricos, é utilizado o método `pandas.DataFrame.fillna`, no método `ffill`, enquanto valores
         numéricos são interpolados com o método `pandas.DataFrame.interpolate`.
+        **Não aplica interpolação a valores faltantes na classe, realizando o `drop`**.
 
         :param dataset: Conjunto de dados a ser tratado.
         :type dataset: pd.DataFrame
@@ -50,7 +51,6 @@ class DatasetTreatment(TreatmentAbstract):
         :rtype: pd.DataFrame
         """
         categoricas = dataset.select_dtypes(['category']).columns
-        numericas = list(filter(lambda col: col not in categoricas, dataset.columns))
         for col in dataset.columns:
             # Pular colunas que não contenham valores NaN
             if not dataset[col].isna().any():
@@ -62,4 +62,5 @@ class DatasetTreatment(TreatmentAbstract):
                 dataset[col] = dataset[col].astype(float)
                 dataset[col].interpolate(inplace=True)
 
-        return dataset
+        # Drop remove instâncias com valores faltantes de classe
+        return dataset.dropna()

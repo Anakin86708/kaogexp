@@ -53,12 +53,12 @@ class LatinSampler(SamplerAbstract):
         return sample
 
     @staticmethod
-    def _sanitize(input: np.ndarray) -> np.ndarray:
+    def _sanitize(input_: np.ndarray) -> np.ndarray:
         """
         Sanitizes the point of interest to be a numpy array without strings and with dtype float.
 
-        :param input: Array to be sanitized
-        :type input: np.ndarray
+        :param input_: Array to be sanitized
+        :type input_: np.ndarray
         :return: Array without strings and with dtype float
         :rtype: np.ndarray
         """
@@ -71,4 +71,4 @@ class LatinSampler(SamplerAbstract):
 
         filter_non_float = np.vectorize(filter_non_float)
 
-        return filter_non_float(input)
+        return filter_non_float(input_)

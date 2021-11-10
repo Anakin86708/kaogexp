@@ -9,10 +9,10 @@ from kaogexp.data.normalizer.NormalizerAbstract import NormalizerAbstract
 class MinMaxNormalizer(NormalizerAbstract):
     normalizer = MinMaxScaler()
 
-    def __init__(self, x: pd.DataFrame, nomes_colunas_numericas: pd.Index):
-        super().__init__(nomes_colunas_numericas)
+    def __init__(self, x: pd.DataFrame, nomes_colunas_normalizar: pd.Index):
+        super().__init__(nomes_colunas_normalizar)
         self._data = x
-        self.normalizer.fit(x.loc[:, self.nomes_colunas_numericas])
+        self.normalizer.fit(x.loc[:, self.nomes_colunas_normalizar])
 
     def transform(self, instancia: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:
         """
@@ -28,8 +28,8 @@ class MinMaxNormalizer(NormalizerAbstract):
             return self.transform(pd.DataFrame([instancia])).iloc[0]
 
         elif isinstance(instancia, pd.DataFrame):
-            instancia[self.nomes_colunas_numericas] = self.normalizer.transform(
-                instancia[self.nomes_colunas_numericas])
+            instancia[self.nomes_colunas_normalizar] = self.normalizer.transform(
+                instancia[self.nomes_colunas_normalizar])
         return instancia
 
     def inverse_transform(self, instancia: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:
@@ -45,6 +45,6 @@ class MinMaxNormalizer(NormalizerAbstract):
         if isinstance(instancia, pd.Series):
             return self.inverse_transform(pd.DataFrame([instancia])).iloc[0]
         elif isinstance(instancia, pd.DataFrame):
-            instancia[self.nomes_colunas_numericas] = self.normalizer.inverse_transform(
-                instancia[self.nomes_colunas_numericas])
+            instancia[self.nomes_colunas_normalizar] = self.normalizer.inverse_transform(
+                instancia[self.nomes_colunas_normalizar])
         return instancia
