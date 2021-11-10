@@ -52,7 +52,8 @@ class DatasetAbstract(ABC):
         self._tratador = None
         if tratar_na:
             self._tratador: TreatmentAbstract = TreatmentFactory.create(tratador, dataset=self._dataset)
-            self._dataset = self._tratador.tratar_na(data, self._valores_na)
+            self._dataset = self.tratador.tratar_na(data, self._valores_na)
+            self.tratador.atualizar_colunas(self._dataset)
 
         if self._dataset.isna().any().any():
             raise Exception("Não é possível continuar com valores faltantes sem tratamento")
@@ -79,8 +80,7 @@ class DatasetAbstract(ABC):
             ds_normalizado = self._normalizador.transform(dataset.drop(NOME_COLUNA_Y, axis=1))
             dataset = ds_normalizado.join(dataset[NOME_COLUNA_Y])
         if encoded:
-            # TODO: implementar encoding
-            pass
+            dataset = self.tratador.encode(dataset)
         return dataset
 
     @property
@@ -98,9 +98,9 @@ class DatasetAbstract(ABC):
     @cached_property
     def nomes_colunas_numericas(self) -> pd.Index:
         """Definidas como as colunas que são são a `NOME_COLUNA_Y` ou colunas categóricas."""
-        return self.x(False).drop(self._nomes_colunas_categoricas, axis=1).copy().columns
+        return self.x(False).drop(self.nomes_colunas_categoricas, axis=1).copy().columns
 
-    def x(self, normalizado: bool = True, encoded: bool = True) -> pd.DataFrame:
+    def x(self, normalizado: bool = True, encoded: bool = False) -> pd.DataFrame:
         """
         Retorna o dataset sem `NOME_COLUNA_Y`.
 

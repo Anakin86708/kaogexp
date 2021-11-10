@@ -36,7 +36,7 @@ class DatasetFromMemoryTest(unittest.TestCase):
         ]
         for instance, index in instance_and_indexes:
             with self.subTest(f"{instance.__class__}", instance=instance, index=index):
-                pd.testing.assert_index_equal(instance.nomes_colunas_numericas, index)
+                pd.testing.assert_index_equal(instance.nomes_colunas_numericas, index, check_order=False)
 
     def test_x_iris(self):
         instance = self.iris_instance
@@ -44,7 +44,7 @@ class DatasetFromMemoryTest(unittest.TestCase):
         index = pd.Index(['sepal_length', 'sepal_width', 'petal_length', 'petal_width'])
 
         self.assertTrue(instance.x().shape == shape)
-        pd.testing.assert_index_equal(instance.x().columns, index)
+        pd.testing.assert_index_equal(instance.x().columns, index, check_order=False)
 
     def test_x_adult(self):
         instance = self.adult_instance
@@ -54,8 +54,8 @@ class DatasetFromMemoryTest(unittest.TestCase):
              'relationship',
              'race', 'sex', 'capital-gain', 'capital-loss', 'hours-per-week', 'native-country'])
 
-        self.assertTrue(instance.x().shape == shape)
-        pd.testing.assert_index_equal(instance.x().columns, index)
+        self.assertEqual(shape, instance.x(encoded=False).shape)
+        pd.testing.assert_index_equal(instance.x(encoded=False).columns, index, check_order=False)
 
     def test_y(self):
         instances_and_shapes = [

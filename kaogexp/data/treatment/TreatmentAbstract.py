@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Tuple
+from typing import Union
 
 import pandas as pd
 
@@ -18,7 +19,7 @@ class TreatmentAbstract(ABC):
         return self._nomes_colunas_encoded
 
     @abstractmethod
-    def encode(self, instancia: pd.Series) -> pd.Series:
+    def encode(self, instancia: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:
         raise NotImplementedError
 
     @abstractmethod
@@ -28,4 +29,8 @@ class TreatmentAbstract(ABC):
     @staticmethod
     @abstractmethod
     def tratar_na(dataset: pd.DataFrame, valores_na: Tuple) -> pd.DataFrame:
+        raise NotImplementedError
+
+    @abstractmethod
+    def atualizar_colunas(self, dataset: pd.DataFrame) -> None:
         raise NotImplementedError
