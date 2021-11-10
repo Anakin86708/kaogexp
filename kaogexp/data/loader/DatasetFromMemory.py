@@ -6,6 +6,10 @@ from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 
 
 class DatasetFromMemory(DatasetAbstract):
+    """
+    Representação dos dados, mas que pode ser criado diretamente a partir de um DataFrame.
+    """
+
     def __init__(self,
                  data: pd.DataFrame,
                  colunas_categoricas: pd.Index,

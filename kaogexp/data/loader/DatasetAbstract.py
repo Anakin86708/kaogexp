@@ -21,6 +21,27 @@ class DatasetAbstract(ABC):
                  normalizador: str = "MinMaxNormalizer",
                  tratador: str = "DatasetTreatment"
                  ):
+        """
+        Inicializa o dataset.
+        Será feita a atribuição do tipo adequado de categórico do Pandas para as colunas categóricas.
+        Trata os dados faltantes em `data`, definidos em `valores_na`, se `tratar_na` for True. Caso False, o valor de
+        `tratador` não será usado.
+        Finalmente é criado o normalizado com base no `normalizador`.
+
+        
+        :param data: Conjunto de dados.
+        :type data: pd.DataFrame
+        :param colunas_categoricas: Nomes para as colunas categóricas.
+        :type colunas_categoricas: pd.Index
+        :param valores_na: Valores que serão considerados como N/A.
+        :type valores_na: Tuple[str, ...]
+        :param tratar_na: Se deve tratar os valores N/A.
+        :type tratar_na: bool
+        :param normalizador: Nome do normalizador a ser criado pela factory.
+        :type normalizador: str
+        :param tratador: Nome do tratador a ser criado pela factory.
+        :type tratador: str
+        """
 
         self._dataset = data
         self._nomes_colunas_categoricas = colunas_categoricas
@@ -75,16 +96,27 @@ class DatasetAbstract(ABC):
         return self._nomes_colunas_categoricas.copy()
 
     @cached_property
-    def nomes_colunas_numericas(self):
+    def nomes_colunas_numericas(self) -> pd.Index:
+        """Definidas como as colunas que são são a `NOME_COLUNA_Y` ou colunas categóricas."""
         return self.x(False).drop(self._nomes_colunas_categoricas, axis=1).copy().columns
 
     def x(self, normalizado: bool = True, encoded: bool = True) -> pd.DataFrame:
+        """
+        Retorna o dataset sem `NOME_COLUNA_Y`.
+
+        :param normalizado: Se x deven ser normalizado.
+        :type normalizado: bool
+        :param encoded: Se x deve ser codificado.
+        :type encoded: bool
+        :return: O dataset sem `NOME_COLUNA_Y`.
+        """
         return self.dataset(normalizado, encoded).drop(NOME_COLUNA_Y, axis=1)
 
     def y(self) -> pd.Series:
+        """Apenas `NOME_COLUNA_Y` do dataset."""
         return self.dataset(False)[NOME_COLUNA_Y].copy()
 
     def _atribuir_colunas_categoricas(self) -> None:
-        """Define as colunas necessárias com o tipo adequado de categórico do Pandas"""
+        """Define as colunas necessárias com o tipo adequado de categórico do Pandas."""
         colunas_categoricas = self._nomes_colunas_categoricas
         self._dataset[colunas_categoricas] = self._dataset[colunas_categoricas].astype("category")
