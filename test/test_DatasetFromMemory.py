@@ -3,7 +3,6 @@ from unittest import expectedFailure
 
 import pandas as pd
 
-from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from test.util import Data
 
 
@@ -13,9 +12,10 @@ class DatasetFromMemoryTest(unittest.TestCase):
 
         super().__init__(*args, **kwargs)
 
-    def test_create_instance(self):
-        self.create_new_instance_iris()
-        self.create_new_instance_adult()
+    @staticmethod
+    def test_create_instance():
+        Data.create_new_instance_iris()
+        Data.create_new_instance_adult()
 
     def test_categorical_columns(self):
         # Iris
@@ -85,7 +85,7 @@ class DatasetFromMemoryTest(unittest.TestCase):
 
     @expectedFailure
     def test_normalization_fail(self):
-        instances = [self.create_new_instance_iris(), self.create_new_instance_adult()]
+        instances = [Data.create_new_instance_iris(), Data.create_new_instance_adult()]
         for instance in instances:
             with self.subTest(f"{instance.__class__}", instance=instance):
                 nomes_cols_normalizar = instance.normalizador.nomes_colunas_normalizar
@@ -103,26 +103,13 @@ class DatasetFromMemoryTest(unittest.TestCase):
 
     @property
     def iris_instance(self):
-        return self.create_new_instance_iris()
+        return Data.create_new_instance_iris()
 
     @property
     def adult_instance(self):
-        return self.create_new_instance_adult()
+        return Data.create_new_instance_adult()
 
-    @staticmethod
-    def create_new_instance_iris(tratar_na=True):
-        colunas_categoricas, df = Data.iris_dataset()
-        return DatasetFromMemory(df, colunas_categoricas, tratar_na=tratar_na)
 
-    def create_new_instance_adult(self, tratar_na=True):
-        df = self.adult_dataset
-
-        df['target'] = pd.Categorical(df['target'])
-        df['target'].replace([' <=50K', ' >50K'], [0, 1], inplace=True)
-        object__columns = df.select_dtypes(['object']).columns
-        df[object__columns] = df[object__columns].astype('category')
-        colunas_categoricas = df.drop('target', axis=1, errors='ignore').select_dtypes(['category', 'object']).columns
-        return DatasetFromMemory(df, colunas_categoricas, tratar_na=tratar_na)
 
 
 if __name__ == '__main__':

@@ -43,7 +43,7 @@ class DatasetAbstract(ABC):
         :type tratador: str
         """
 
-        self._dataset = data
+        self._dataset = self._strip_dataset(data)
         self._nomes_colunas_categoricas = colunas_categoricas
         self._atribuir_colunas_categoricas()
         self._valores_na = valores_na
@@ -115,6 +115,16 @@ class DatasetAbstract(ABC):
     def y(self) -> pd.Series:
         """Apenas `NOME_COLUNA_Y` do dataset."""
         return self.dataset(False)[NOME_COLUNA_Y].copy()
+
+    @staticmethod
+    def _strip_dataset(dataset: pd.DataFrame) -> pd.DataFrame:
+        for column in dataset.columns:
+            try:
+                # Removendo espacos em branco
+                dataset[column] = dataset[column].str.strip()
+            except AttributeError:
+                continue
+        return dataset
 
     def _atribuir_colunas_categoricas(self) -> None:
         """Define as colunas necessárias com o tipo adequado de categórico do Pandas."""

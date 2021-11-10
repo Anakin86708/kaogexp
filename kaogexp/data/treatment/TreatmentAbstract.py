@@ -27,5 +27,5 @@ class TreatmentAbstract(ABC):
 
     @staticmethod
     @abstractmethod
-    def tratar_na(dataset: pd.DataFrame, valores_na: Tuple[str, ...]) -> pd.DataFrame:
+    def tratar_na(dataset: pd.DataFrame, valores_na: Tuple) -> pd.DataFrame:
         raise NotImplementedError
