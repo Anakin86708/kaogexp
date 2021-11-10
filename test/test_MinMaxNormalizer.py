@@ -25,7 +25,7 @@ class MinMaxNormalizerTest(unittest.TestCase):
         # Test with a series
         sample = self.data_adult.sample(1).iloc[0]
         transformed = instance.transform(sample)
-        self.assertTrue(transformed[instance.nomes_colunas_numericas].between(0, 1).all())
+        self.assertTrue(transformed[instance.nomes_colunas_normalizar].between(0, 1).all())
         self.assertIsInstance(transformed, pd.Series)
 
     def test_transform_dataframe(self):
@@ -35,14 +35,14 @@ class MinMaxNormalizerTest(unittest.TestCase):
         sample = self.data_adult.sample(1)
         transformed = instance.transform(sample)
         self.assertTrue(
-            transformed.apply(lambda x: x[instance.nomes_colunas_numericas].between(0, 1).all(), axis=1).all())
+            transformed.apply(lambda x: x[instance.nomes_colunas_normalizar].between(0, 1).all(), axis=1).all())
         self.assertIsInstance(transformed, pd.DataFrame)
 
         # Test with a dataframe with multiple rows¶
         sample = self.data_adult.sample(10)
         transformed = instance.transform(sample)
         self.assertTrue(
-            transformed.apply(lambda x: x[instance.nomes_colunas_numericas].between(0, 1).all(), axis=1).all())
+            transformed.apply(lambda x: x[instance.nomes_colunas_normalizar].between(0, 1).all(), axis=1).all())
         self.assertIsInstance(transformed, pd.DataFrame)
 
     def test_reverse_transform_series(self):
@@ -51,9 +51,9 @@ class MinMaxNormalizerTest(unittest.TestCase):
         # Test with a series
         sample = self.data_adult.sample(1).iloc[0]
         transformed = instance.transform(sample)
-        reversed = instance.inverse_transform(transformed)
-        pd.testing.assert_series_equal(reversed, sample)
-        self.assertIsInstance(reversed, pd.Series)
+        reversed_ = instance.inverse_transform(transformed)
+        pd.testing.assert_series_equal(reversed_, sample)
+        self.assertIsInstance(reversed_, pd.Series)
 
     def test_reverse_transform_dataframe(self):
         instance = self.create()
@@ -61,16 +61,16 @@ class MinMaxNormalizerTest(unittest.TestCase):
         # Test with a dataframe with a single row
         sample = self.data_adult.sample(1)
         transformed = instance.transform(sample)
-        reversed = instance.inverse_transform(transformed)
-        pd.testing.assert_frame_equal(reversed, sample)
-        self.assertIsInstance(reversed, pd.DataFrame)
+        reversed_ = instance.inverse_transform(transformed)
+        pd.testing.assert_frame_equal(reversed_, sample)
+        self.assertIsInstance(reversed_, pd.DataFrame)
 
         # Test with a dataframe with multiple rows
         sample = self.data_adult.sample(10)
         transformed = instance.transform(sample)
-        reversed = instance.inverse_transform(transformed)
-        pd.testing.assert_frame_equal(reversed, sample)
-        self.assertIsInstance(reversed, pd.DataFrame)
+        reversed_ = instance.inverse_transform(transformed)
+        pd.testing.assert_frame_equal(reversed_, sample)
+        self.assertIsInstance(reversed_, pd.DataFrame)
 
     ################
     # Util methods #

@@ -16,10 +16,9 @@ class DatasetAbstract(ABC):
     def __init__(self,
                  data: pd.DataFrame,
                  colunas_categoricas: pd.Index,
-                 valores_na: Tuple[str, ...] = ('?'),
+                 valores_na: Tuple[str, ...] = ('?',),
                  tratar_na: bool = True,
                  normalizador: str = "MinMaxNormalizer",
-                 normalizar: bool = True,
                  tratador: str = "DatasetTreatment"
                  ):
 
@@ -37,19 +36,31 @@ class DatasetAbstract(ABC):
         if self._dataset.isna().any().any():
             raise Exception("Não é possível continuar com valores faltantes sem tratamento")
 
-        # Normalizar dados se necessário
-        self._normalizador = None
-        if normalizar:
-            x = self.x(False, False)
-            nomes_cols_num = x.drop(self._nomes_colunas_categoricas, axis=1).columns
-            self._normalizador: NormalizerAbstract = NormalizerFactory.create(normalizador,
-                                                                              x=x,
-                                                                              nomes_colunas_numericas=nomes_cols_num)
-            # TODO: aplicar a normalizacao no dataset
+        x = self.x(False, False)
+        nomes_cols_num = x.drop(self._nomes_colunas_categoricas, axis=1).columns
+        self._normalizador: NormalizerAbstract = NormalizerFactory.create(normalizador,
+                                                                          x=x,
+                                                                          nomes_colunas_normalizar=nomes_cols_num)
 
-    @property
-    def dataset(self):
-        return self._dataset.copy()
+    def dataset(self, normalizado: bool = True, encoded: bool = False) -> pd.DataFrame:
+        """
+        Retorna o dataset normalizado e/ou codificado
+
+        :param normalizado: Se o dataset deve ser normalizado
+        :type normalizado: bool
+        :param encoded: Se o dataset deve ser codificado
+        :type encoded: bool
+        :return: O dataset normalizado e/ou codificado
+        :rtype: pd.DataFrame
+        """
+        dataset = self._dataset.copy()
+        if normalizado:
+            ds_normalizado = self._normalizador.transform(dataset.drop(NOME_COLUNA_Y, axis=1))
+            dataset = ds_normalizado.join(dataset[NOME_COLUNA_Y])
+        if encoded:
+            # TODO: implementar encoding
+            pass
+        return dataset
 
     @property
     def tratador(self):
@@ -65,18 +76,13 @@ class DatasetAbstract(ABC):
 
     @cached_property
     def nomes_colunas_numericas(self):
-        return self.x(False, False).drop(self._nomes_colunas_categoricas, axis=1).copy().columns
+        return self.x(False).drop(self._nomes_colunas_categoricas, axis=1).copy().columns
 
     def x(self, normalizado: bool = True, encoded: bool = True) -> pd.DataFrame:
-        x: pd.DataFrame = self.dataset.drop(NOME_COLUNA_Y, axis=1)
-        if normalizado:
-            x.apply(self._normalizador.transform, inplace=True)
-        if encoded:
-            x.apply(self._tratador.encode, inplace=True)
-        return x
+        return self.dataset(normalizado, encoded).drop(NOME_COLUNA_Y, axis=1)
 
     def y(self) -> pd.Series:
-        return self.dataset[NOME_COLUNA_Y].copy()
+        return self.dataset(False)[NOME_COLUNA_Y].copy()
 
     def _atribuir_colunas_categoricas(self) -> None:
         """Define as colunas necessárias com o tipo adequado de categórico do Pandas"""
