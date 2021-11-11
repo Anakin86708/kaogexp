@@ -1,6 +1,7 @@
 import random
 import unittest
 from functools import partial
+from unittest import expectedFailure
 
 import numpy as np
 
@@ -63,6 +64,17 @@ class LatinSamplerTest(unittest.TestCase):
 
                 results = list(map(partial(self.is_inside_space, epsilon=self.EPSILON, interest_point=input_), sample))
                 self.assertTrue(False not in results, f"[{i}] Samples are not inside the correct space")
+
+    @expectedFailure
+    def test_amostragem_diferentes(self):
+        input_ = np.array([0, 0])
+        amount = 10
+        sample1 = self.instance.realizar_amostragem(input_, amount)
+        sample2 = self.instance.realizar_amostragem(input_, amount)
+        # Comparar cada elemento de sample1 com cada elemento de sample2
+        for i1, i2 in zip(sample1, sample2):
+            with self.subTest("Amostragem_diferentes subtest", i1=i1, i2=i2):
+                np.testing.assert_array_equal(i1, i2)
 
     ################
     # Util methods #
