@@ -110,7 +110,5 @@ class DatasetFromMemoryTest(unittest.TestCase):
         return Data.create_new_instance_adult()
 
 
-
-
 if __name__ == '__main__':
     unittest.main()

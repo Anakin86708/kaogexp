@@ -12,7 +12,7 @@ from test.util import Data
 class DatasetTreatmentTest(unittest.TestCase):
 
     def test_tratar_na_iris(self):
-        _, dataset = Data.iris_dataset()
+        dataset = Data.iris_dataset()
 
         # Colocar alguns dados como NaN
         index_last = dataset.iloc[-1].name
@@ -94,13 +94,13 @@ class DatasetTreatmentTest(unittest.TestCase):
         dataset = Data.create_new_instance_iris()
         encoded = dataset.dataset(encoded=True)
 
-        self.assertEqual((150, 5), Data.iris_dataset()[1].shape)
+        self.assertEqual((150, 5), Data.iris_dataset().shape)
 
     def test_encode_iris_using_dataset_not_encoded(self):
         dataset = Data.create_new_instance_iris()
         encoded = dataset.dataset(encoded=False)
 
-        self.assertEqual((150, 5), Data.iris_dataset()[1].shape)
+        self.assertEqual((150, 5), Data.iris_dataset().shape)
 
     def test_encode_adult_using_dataset(self):
         dataset = Data.create_new_instance_adult()
@@ -171,7 +171,7 @@ class DatasetTreatmentTest(unittest.TestCase):
 
     @staticmethod
     def _prepare_iris():
-        _, dataset = Data.iris_dataset()
+        dataset = Data.iris_dataset()
         instance = DatasetTreatment(dataset)
         # Coluna y deve ser ignorada
         dataset = dataset.drop(NOME_COLUNA_Y, axis=1)

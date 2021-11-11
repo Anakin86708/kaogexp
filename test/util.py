@@ -9,7 +9,8 @@ class Data:
 
     @staticmethod
     def create_new_instance_iris(tratar_na=True):
-        colunas_categoricas, df = Data.iris_dataset()
+        df = Data.iris_dataset()
+        colunas_categoricas = df.drop('target', axis=1, errors='ignore').select_dtypes(['category', 'object']).columns
         return DatasetFromMemory(df, colunas_categoricas, tratar_na=tratar_na)
 
     @staticmethod
@@ -34,12 +35,11 @@ class Data:
         return Data._adult_dataset.copy()
 
     @staticmethod
-    def iris_dataset() -> (pd.Index, pd.DataFrame):
+    def iris_dataset() -> pd.DataFrame:
         data = load_iris()
         df = pd.DataFrame(data.data, columns=['sepal_length', 'sepal_width', 'petal_length', 'petal_width'])
         df['target'] = pd.Categorical(data.target)
-        colunas_categoricas = df.drop('target', axis=1, errors='ignore').select_dtypes(['category', 'object']).columns
-        return colunas_categoricas, df.copy()
+        return df.copy()
 
     @staticmethod
     def _download_adult_dataset():
