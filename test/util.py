@@ -18,10 +18,14 @@ class Data:
 
         df['target'] = pd.Categorical(df['target'])
         df['target'].replace([' <=50K', ' >50K'], [0, 1], inplace=True)
-        object__columns = df.select_dtypes(['object']).columns
-        df[object__columns] = df[object__columns].astype('category')
+        Data.define_categorical_from_object(df)
         colunas_categoricas = df.drop('target', axis=1, errors='ignore').select_dtypes(['category', 'object']).columns
         return DatasetFromMemory(df, colunas_categoricas, tratar_na=tratar_na)
+
+    @staticmethod
+    def define_categorical_from_object(df: pd.DataFrame) -> None:
+        object__columns = df.select_dtypes(['object']).columns
+        df[object__columns] = df[object__columns].astype('category')
 
     @staticmethod
     def adult_dataset():

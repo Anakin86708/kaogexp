@@ -119,7 +119,39 @@ class DatasetTreatmentTest(unittest.TestCase):
         self.assertIn(NOME_COLUNA_Y, encoded.columns)
         self.assertEqual(0, encoded.select_dtypes(["O", "category"]).shape[1])
 
-    # TODO: fazer testes para saber se o encoding está realmente funcionando
+    def test_encode_expected_result(self):
+        """Voltado para testar se as variáveis estão sendo codificadas corretamente"""
+        dataset = pd.DataFrame(
+            {
+                "age": [25, 30, 24, 64],
+                "workclass": ["Private", "Self-emp-not-inc", "Self-emp-inc", "Federal-gov"],
+                "fnlwgt": [3500, 4500, 4500, 4500],
+                "education": ["Bachelors", "HS-grad", "11th", "HS-grad"],
+                "target": [0, 0, 1, 1]
+            }
+        )
+        Data.define_categorical_from_object(dataset)
+
+        expected_encoded = pd.DataFrame(
+            {
+                "age": [25, 30, 24, 64],
+                "fnlwgt": [3500, 4500, 4500, 4500],
+                "workclass_Federal-gov": [0, 0, 0, 1],
+                "workclass_Private": [1, 0, 0, 0],
+                "workclass_Self-emp-inc": [0, 0, 1, 0],
+                "workclass_Self-emp-not-inc": [0, 1, 0, 0],
+                "education_11th": [0, 0, 1, 0],
+                "education_Bachelors": [1, 0, 0, 0],
+                "education_HS-grad": [0, 1, 0, 1],
+                "target": [0, 0, 1, 1],
+            }
+        )
+        expected_columns = expected_encoded.columns
+
+        instance = DatasetTreatment(dataset)
+        encoded = instance.encode(dataset)
+        pd.testing.assert_frame_equal(expected_encoded, encoded, check_dtype=False)
+        pd.testing.assert_index_equal(expected_columns, encoded.columns, check_order=False)
 
     ################
     # Util methods #
