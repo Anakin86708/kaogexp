@@ -3,6 +3,7 @@ from typing import Union
 
 import lhsmdu as lhsmdu
 import numpy as np
+import pandas as pd
 
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
 
@@ -28,18 +29,19 @@ class LatinSampler(SamplerAbstract):
         self.seed = seed
         lhsmdu.setRandomSeed(seed)
 
-    def realizar_amostragem(self, interest_point: np.ndarray, num_samples: int) -> np.ndarray:
+    def realizar_amostragem(self, interest_point: pd.Series, num_samples: int) -> np.ndarray:
         """
         Realizes a Latin Hypercube Sampling around 'interest_point' with 'num_samples' samples.
 
         :param interest_point: Point of interest to be sampled around.
-        :type interest_point: np.ndarray
+        :type interest_point: pd.Series
         :param num_samples: Number of samples to be generated.
         :type num_samples: int
         :return: Array of samples. Each item is a sample. Use `sample.T[i]` to get all results from all samples from one
          dimension.
         :rtype: np.ndarray
         """
+        interest_point = interest_point.to_numpy()
         interest_point = self._sanitize(interest_point)
 
         # Calcula a amostra e os valores para realizar a transformação

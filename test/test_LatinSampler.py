@@ -4,6 +4,7 @@ from functools import partial
 from unittest import expectedFailure
 
 import numpy as np
+import pandas as pd
 
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 
@@ -43,7 +44,7 @@ class LatinSamplerTest(unittest.TestCase):
 
     def test_realizar_amostragem_origin(self):
         # Test with a numeric array on origin
-        input_ = np.array([0, 0])
+        input_ = pd.Series(np.array([0, 0]))
         amount = 10
         sample = self.instance.realizar_amostragem(input_, amount)
 
@@ -58,7 +59,7 @@ class LatinSamplerTest(unittest.TestCase):
 
         for i in range(num_subtests):
             with self.subTest("Amostragem_multiple_points subtest", i=i):
-                input_ = np.random.random_sample(random.randint(min_shape_sample, max_shape_sample))
+                input_ = pd.Series(np.random.random_sample(random.randint(min_shape_sample, max_shape_sample)))
                 amount = 10
                 sample = self.instance.realizar_amostragem(input_, amount)
 
@@ -67,7 +68,7 @@ class LatinSamplerTest(unittest.TestCase):
 
     @expectedFailure
     def test_amostragem_diferentes(self):
-        input_ = np.array([0, 0])
+        input_ = pd.Series(np.array([0, 0]))
         amount = 10
         sample1 = self.instance.realizar_amostragem(input_, amount)
         sample2 = self.instance.realizar_amostragem(input_, amount)
