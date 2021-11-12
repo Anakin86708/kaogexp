@@ -1,12 +1,14 @@
 import random
 import unittest
 from functools import partial
+from typing import Union
 from unittest import expectedFailure
 
 import numpy as np
 import pandas as pd
 
 from kaogexp.data.sampler.LatinSampler import LatinSampler
+from util import Data
 
 
 class LatinSamplerTest(unittest.TestCase):
@@ -21,14 +23,14 @@ class LatinSamplerTest(unittest.TestCase):
 
     def test_sanitize_numeric(self):
         # Sanitize np.array with only numeric values
-        input_ = np.array([1, .432, 3])
+        input_ = pd.Series([1, .432, 3])
         sanitized = self.instance._sanitize(input_)
         np.testing.assert_array_equal(sanitized, input_)
         self.assertTrue(sanitized.dtype, 'float')
 
     def test_sanitize_non_numeric(self):
         # Sanitize np.array with only non-numeric values
-        input_ = np.array(['a', 'b', 'c'])
+        input_ = pd.Series(['a', 'b', 'c'])
         expected = np.array([0] * len(input_))
         sanitized = self.instance._sanitize(input_)
         np.testing.assert_array_equal(sanitized, expected)
@@ -36,7 +38,7 @@ class LatinSamplerTest(unittest.TestCase):
 
     def test_sanitize_mixed(self):
         # Sanitize np.array with mixed numeric and non-numeric values
-        input_ = np.array(['a', .432, 3])
+        input_ = pd.Series(['a', .432, 3])
         expected = np.array([0, .432, 3])
         sanitized = self.instance._sanitize(input_)
         np.testing.assert_array_equal(sanitized, expected)
@@ -48,13 +50,14 @@ class LatinSamplerTest(unittest.TestCase):
         amount = 10
         sample = self.instance.realizar_amostragem(input_, amount)
 
-        is_inside_space = np.vectorize(partial(self.is_inside_space, epsilon=self.EPSILON, interest_point=input_))
+        is_inside_space = partial(self.is_inside_space, epsilon=self.EPSILON, interest_point=input_)
         self.assertTrue(is_inside_space(sample).all(), "Sample is not inside the space")
+        self.assertNotIn('object', sample.dtypes)
 
     def test_realizar_amostragem_multiple_points(self):
         # Test with a numeric array in multiple points
         num_subtests = 50
-        min_shape_sample = 1
+        min_shape_sample = 2
         max_shape_sample = 15
 
         for i in range(num_subtests):
@@ -63,19 +66,33 @@ class LatinSamplerTest(unittest.TestCase):
                 amount = 10
                 sample = self.instance.realizar_amostragem(input_, amount)
 
-                results = list(map(partial(self.is_inside_space, epsilon=self.EPSILON, interest_point=input_), sample))
-                self.assertTrue(False not in results, f"[{i}] Samples are not inside the correct space")
+                is_inside_space = partial(self.is_inside_space, epsilon=self.EPSILON, interest_point=input_)
+                self.assertTrue(is_inside_space(sample).all(), "Sample is not inside the space")
+                self.assertNotIn('object', sample.dtypes)
 
     @expectedFailure
     def test_amostragem_diferentes(self):
         input_ = pd.Series(np.array([0, 0]))
         amount = 10
-        sample1 = self.instance.realizar_amostragem(input_, amount)
-        sample2 = self.instance.realizar_amostragem(input_, amount)
+        sample1 = self.instance.realizar_amostragem(input_, amount).to_numpy()
+        sample2 = self.instance.realizar_amostragem(input_, amount).to_numpy()
         # Comparar cada elemento de sample1 com cada elemento de sample2
         for i1, i2 in zip(sample1, sample2):
             with self.subTest("Amostragem_diferentes subtest", i1=i1, i2=i2):
                 np.testing.assert_array_equal(i1, i2)
+
+    def test_real_sampling(self):
+        adult = Data.create_new_instance_adult()
+        input_: pd.Series = adult.dataset(True, False).sample(1).iloc[0]
+        amount = 10
+        sample = self.instance.realizar_amostragem(input_, amount)
+        colunas_numericas = adult.nomes_colunas_numericas
+        sample_num = sample[colunas_numericas]
+
+        is_inside_space = partial(self.is_inside_space, epsilon=self.EPSILON, interest_point=input_[colunas_numericas])
+        self.assertTrue(is_inside_space(sample_num).all(), "Sample is not inside the space")
+        self.assertNotIn('object', sample.dtypes)
+        pd.testing.assert_index_equal(adult.tratador.nomes_colunas_originais, sample.columns)
 
     ################
     # Util methods #
@@ -86,10 +103,11 @@ class LatinSamplerTest(unittest.TestCase):
         return LatinSampler(epsilon, seed)
 
     @staticmethod
-    def is_inside_space(x: np.ndarray, epsilon, interest_point) -> bool:
+    def is_inside_space(x: pd.DataFrame, epsilon: Union[int, float, np.ndarray],
+                        interest_point: pd.Series) -> bool:
         inf = interest_point - epsilon
         sup = interest_point + epsilon
-        return (inf <= x).all() and (x <= sup).all()
+        return (inf <= x.min()).all() and (x.max() <= sup).all()
 
 
 if __name__ == '__main__':
