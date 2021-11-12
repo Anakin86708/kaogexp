@@ -3,6 +3,7 @@ from unittest import expectedFailure
 
 import pandas as pd
 
+from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.model.RandomForestModel import RandomForestModel
@@ -11,6 +12,7 @@ from util import Data
 
 class KAOGExpTest(unittest.TestCase):
     EPSILON = 0.05
+    QTD_AMOSTRAS = 10
 
     def setUp(self) -> None:
         self.adult = Data.create_new_instance_adult()
@@ -18,20 +20,20 @@ class KAOGExpTest(unittest.TestCase):
         sampler = LatinSampler(KAOGExpTest.EPSILON)
         self.instance = KAOGExp(self.adult, model, sampler)
 
-    def test_instance_compatibility_dataframe(self):
+    def test_assert_instance_compatibility_dataframe(self):
         """Instance must be `pd.Series` or `pd.DataFrame` and with same columns as the `tratador`"""
         adult = Data.create_new_instance_adult()
         input_ = adult.dataset(encoded=False).sample(5)
         self.instance._assert_instance_compatibility(input_)
 
-    def test_instance_compatibility_series(self):
+    def test_assert_instance_compatibility_series(self):
         """Instance must be `pd.Series` or `pd.DataFrame` and with same columns as the `tratador`"""
         adult = Data.create_new_instance_adult()
         input_ = adult.dataset(encoded=False).sample(5).iloc[0]
         self.instance._assert_instance_compatibility(input_)
 
     @expectedFailure
-    def test_instance_compatibility_error(self):
+    def test_assert_instance_compatibility_error(self):
         """Instance must be `pd.Series` or `pd.DataFrame` and with same columns as the `tratador`, not `np.ndarray`"""
         adult = Data.create_new_instance_adult()
         input_ = adult.dataset(encoded=False).sample(5).iloc[0].to_numpy()
@@ -43,9 +45,9 @@ class KAOGExpTest(unittest.TestCase):
         input_ = adult.dataset(encoded=False).sample(1).iloc[0]
         sample = self.instance._realizar_amostragem(input_)
         self.assertEqual(KAOGExp.NUM_SAMPLES, sample.shape[0])
-        pd.testing.assert_index_equal(input_.index, sample.columns)
+        pd.testing.assert_index_equal(input_.index.drop(NOME_COLUNA_Y), sample.columns)
 
-    def test_realizar_amostragem_dataframe(self):
+    def test_realizar_amostragem_dataframe_raise(self):
         """Realizar amostragem must recive `pd.Series` only."""
         adult = Data.create_new_instance_adult()
         input_ = adult.dataset(encoded=False).sample(1)
@@ -53,6 +55,14 @@ class KAOGExpTest(unittest.TestCase):
             self.instance._realizar_amostragem(input_)
         with self.assertRaises(TypeError):
             self.instance._realizar_amostragem(input_.to_numpy())
+
+    def test_classificar_amostragem(self):
+        """`_classificar_amostragem` must return a `np.ndarray` with same share as input"""
+        adult = Data.create_new_instance_adult()
+        input_ = adult.dataset(encoded=False).sample(1).iloc[0]
+        sample = self.instance.sampler.realizar_amostragem(input_, KAOGExpTest.QTD_AMOSTRAS)
+        y = self.instance._classificar_amostragem(sample)
+        self.assertEqual(sample.shape[0], sample.shape[0])
 
 
 if __name__ == '__main__':

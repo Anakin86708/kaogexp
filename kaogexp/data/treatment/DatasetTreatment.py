@@ -34,7 +34,7 @@ class DatasetTreatment(TreatmentAbstract):
             missing_cols = self._get_missing_cols(dummies)
             dummies = dummies.assign(**{col: 0 for col in missing_cols})
             if NOME_COLUNA_Y in instancia.columns:
-                dummies[NOME_COLUNA_Y] = instancia[NOME_COLUNA_Y]
+                dummies = pd.concat([dummies, instancia[NOME_COLUNA_Y]], axis=1)
             assert NOME_COLUNA_Y in dummies if NOME_COLUNA_Y in instancia else NOME_COLUNA_Y not in dummies
             assert self._get_missing_cols(dummies).empty
             return dummies

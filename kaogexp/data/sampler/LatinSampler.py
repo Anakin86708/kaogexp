@@ -5,6 +5,7 @@ import lhsmdu as lhsmdu
 import numpy as np
 import pandas as pd
 
+from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
 
 
@@ -42,7 +43,7 @@ class LatinSampler(SamplerAbstract):
         :rtype: pd.DataFrame
         """
         # Prepara os dados
-        interest_point = interest_point.copy()
+        interest_point = interest_point.copy().drop(NOME_COLUNA_Y, errors='ignore')
         values_to_change = self._get_values_can_change(interest_point)
         interest_point_np = self._sanitize(interest_point).to_numpy()
 

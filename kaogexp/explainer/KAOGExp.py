@@ -50,8 +50,8 @@ class KAOGExp:
         """
         Lógica para a explicação
         """
-        amostragem_encode = self._realizar_amostragem(self.dataset.tratador.encode(instancia))
-        y_amostragem = self._classificar_amostragem(amostragem_encode)
+        amostragem = self._realizar_amostragem(instancia)
+        y_amostragem = self._classificar_amostragem(amostragem)
 
     def _assert_instance_compatibility(self, instance: Union[pd.Series, pd.DataFrame]) -> None:
         """
@@ -93,6 +93,5 @@ class KAOGExp:
         :return: Classificação da amostragem.
         :rtype: np.ndarray
         """
-        amostragem = pd.DataFrame(amostragem, columns=self.dataset.tratador.nomes_colunas_originais)
         encoded = self.dataset.tratador.encode(amostragem)
-        return self.modelo.predict(amostragem)
+        return self.modelo.predict(encoded)
