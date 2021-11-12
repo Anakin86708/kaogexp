@@ -1,5 +1,5 @@
 import pandas as pd
-from kaog.KAOG import KAOG
+from kaog import KAOG
 
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 
@@ -7,13 +7,8 @@ from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 class Counterfactual(MethodAbstract):
 
     def __init__(self, kaog: KAOG, instancia_buscada: pd.Series):
-        super().__init__(kaog)
-        self._instancia_original = instancia_buscada.copy()
+        super().__init__(kaog, instancia_buscada)
         self._realizar_busca()
-
-    @property
-    def instancia_original(self) -> pd.Series:
-        return self._instancia_original.copy()
 
     @property
     def instancia_modificada(self) -> pd.Series:

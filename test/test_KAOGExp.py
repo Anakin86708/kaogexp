@@ -2,10 +2,12 @@ import unittest
 from unittest import expectedFailure
 
 import pandas as pd
+from kaog import KAOG
 
 from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
+from kaogexp.explainer.methods.Counterfactual import Counterfactual
 from kaogexp.model.RandomForestModel import RandomForestModel
 from util import Data
 
@@ -63,6 +65,22 @@ class KAOGExpTest(unittest.TestCase):
         sample = self.instance.sampler.realizar_amostragem(input_, KAOGExpTest.QTD_AMOSTRAS)
         y = self.instance._classificar_amostragem(sample)
         self.assertEqual(sample.shape[0], sample.shape[0])
+
+    def test_criar_kaog(self):
+        adult = Data.create_new_instance_adult()
+        input_ = adult.dataset(encoded=False).sample(1).iloc[0]
+        sample = self.instance.sampler.realizar_amostragem(input_, KAOGExpTest.QTD_AMOSTRAS)
+        y = self.instance._classificar_amostragem(sample)
+        df = pd.concat([sample, pd.Series(y, name=NOME_COLUNA_Y)], axis=1)
+        kaog = self.instance._criar_kaog(df)
+        self.assertIsInstance(kaog, KAOG)
+
+    def test_explicar_counterfactual(self):
+        adult = Data.create_new_instance_adult()
+        input_ = adult.dataset(encoded=False).sample(1).iloc[0]
+        metodo = Counterfactual
+        explicacao = self.instance.explicar(input_, metodo)
+        self.assertIsInstance(explicacao, metodo)
 
 
 if __name__ == '__main__':

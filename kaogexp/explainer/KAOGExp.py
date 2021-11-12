@@ -1,9 +1,10 @@
-from functools import partial
-from typing import Union, Type
+from typing import Union, Type, Tuple
 
 import numpy as np
 import pandas as pd
+from kaog import KAOG
 
+from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
@@ -18,7 +19,10 @@ class KAOGExp:
         self.modelo = modelo
         self.sampler = sampler
 
-    def explicar(self, instancia: Union[pd.Series, pd.DataFrame], metodo: Type[ModelAbstract]):
+    def explicar(self,
+                 instancia: Union[pd.Series, pd.DataFrame],
+                 metodo: Type[MethodAbstract]
+                 ) -> Union[MethodAbstract, Tuple[MethodAbstract]]:
         """
         Tem como objetivo explicar `instancia`, utilizando um método definido por `metodo`.
         Para isso, primeiramente é necessário fazer a verificação se os dados condizem com o esperado pelo modelo.
@@ -33,12 +37,12 @@ class KAOGExp:
         do objeto já instânciado.
         :type metodo: MethodAbstract
         :return: Explicação da instância.
-        :rtype: pd.DataFrame
+        :rtype: MethodAbstract
         :raise ValueError: Se o dado não estiver no tipo esperado.
         """
         self._assert_instance_compatibility(instancia)
         if isinstance(instancia, pd.DataFrame):
-            return instancia.apply(partial(self._explicar, metodo=metodo), axis=1)
+            return tuple(self._explicar(instancia, metodo) for _, instancia in instancia.iterrows())
 
         elif isinstance(instancia, pd.Series):
             return self._explicar(instancia, metodo)
@@ -46,12 +50,15 @@ class KAOGExp:
         else:
             raise TypeError(f'Instance must be of type pd.Series or pd.DataFrame. Got {type(instancia)}.')
 
-    def _explicar(self, instancia: Union[pd.Series, pd.DataFrame], metodo: Type[ModelAbstract]):
+    def _explicar(self, instancia: pd.Series, metodo: Type[MethodAbstract]) -> MethodAbstract:
         """
         Lógica para a explicação
         """
         amostragem = self._realizar_amostragem(instancia)
         y_amostragem = self._classificar_amostragem(amostragem)
+        amostra_completa = pd.concat([amostragem, pd.Series(y_amostragem, name=NOME_COLUNA_Y)], axis=1)
+        kaog = self._criar_kaog(amostra_completa)
+        return metodo(kaog, instancia)
 
     def _assert_instance_compatibility(self, instance: Union[pd.Series, pd.DataFrame]) -> None:
         """
@@ -95,3 +102,10 @@ class KAOGExp:
         """
         encoded = self.dataset.tratador.encode(amostragem)
         return self.modelo.predict(encoded)
+
+    def _criar_kaog(self, amostra_completa: pd.DataFrame) -> KAOG:
+        categorical_index = list(filter(lambda x: type(x) is int,
+                                        [idx if col in self.dataset.nomes_colunas_categoricas else None for idx, col in
+                                         enumerate(amostra_completa.columns)]))
+        return KAOG(amostra_completa, target_column=NOME_COLUNA_Y, categorical_index=categorical_index,
+                    normalizar=False)

@@ -6,13 +6,13 @@ from kaog import KAOG
 
 class MethodAbstract(ABC):
 
-    def __init__(self, kaog: KAOG):
+    def __init__(self, kaog: KAOG, buscada: pd.Series):
         self.kaog = kaog
+        self._instancia_original = buscada
 
     @property
-    @abstractmethod
     def instancia_original(self) -> pd.Series:
-        raise NotImplementedError
+        return self._instancia_original.copy()
 
     @property
     @abstractmethod
