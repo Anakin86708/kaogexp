@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Union, Type
 
 import numpy as np
@@ -33,9 +34,22 @@ class KAOGExp:
         :type metodo: MethodAbstract
         :return: Explicação da instância.
         :rtype: pd.DataFrame
+        :raise ValueError: Se o dado não estiver no tipo esperado.
         """
-
         self._assert_instance_compatibility(instancia)
+        if isinstance(instancia, pd.DataFrame):
+            return instancia.apply(partial(self._explicar, metodo=metodo), axis=1)
+
+        elif isinstance(instancia, pd.Series):
+            return self._explicar(instancia, metodo)
+
+        else:
+            raise TypeError(f'Instance must be of type pd.Series or pd.DataFrame. Got {type(instancia)}.')
+
+    def _explicar(self, instancia: Union[pd.Series, pd.DataFrame], metodo: Type[ModelAbstract]):
+        """
+        Lógica para a explicação
+        """
         amostragem_encode = self._realizar_amostragem(self.dataset.tratador.encode(instancia))
         y_amostragem = self._classificar_amostragem(amostragem_encode)
 
@@ -57,7 +71,7 @@ class KAOGExp:
 
         pd.testing.assert_index_equal(index, self.dataset.tratador.nomes_colunas_originais, check_order=False)
 
-    def _realizar_amostragem(self, instancia: Union[pd.Series, pd.DataFrame]) -> pd.DataFrame:
+    def _realizar_amostragem(self, instancia: pd.Series) -> pd.DataFrame:
         """
         Dado um ponto de instância, realiza a amostragem ao redor dele.
 
@@ -66,6 +80,8 @@ class KAOGExp:
         :return: Amostragem ao redor do ponto de instância.
         :rtype: np.ndarray
         """
+        if not isinstance(instancia, pd.Series):
+            raise TypeError(f'`instancia` must be `pd.Series.` Got {type(instancia)}.')
         return self.sampler.realizar_amostragem(instancia, KAOGExp.NUM_SAMPLES)
 
     def _classificar_amostragem(self, amostragem: pd.DataFrame) -> np.ndarray:
