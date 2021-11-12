@@ -41,6 +41,7 @@ class LatinSampler(SamplerAbstract):
         :return: DataFrame with samples. Each row is a sample.
         :rtype: pd.DataFrame
         """
+        # Prepara os dados
         interest_point = interest_point.copy()
         values_to_change = self._get_values_can_change(interest_point)
         interest_point_np = self._sanitize(interest_point).to_numpy()
@@ -51,7 +52,7 @@ class LatinSampler(SamplerAbstract):
         max_ = (interest_point_np + self.epsilon) * values_to_change
 
         # Realiza a transformação para colocar `latin_sample` ao redor de `interest_point_np`
-        sample = np.array(list(map(lambda x: min_ + x * (max_ - min_), latin_sample.T)))
+        sample = map(lambda x: min_ + x * (max_ - min_), latin_sample.T)
 
         return pd.DataFrame(sample, columns=interest_point.index).convert_dtypes()
 
