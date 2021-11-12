@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 import pandas as pd
-from kaog.KAOG import KAOG
+from kaog import KAOG
 
 
 class MethodAbstract(ABC):

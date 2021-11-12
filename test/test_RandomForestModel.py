@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
 
 from kaogexp.model.RandomForestModel import RandomForestModel
 from util import Data
@@ -21,6 +22,12 @@ class RandomForestModelTest(unittest.TestCase):
         x = x.sample(n=1).iloc[0]
         predict = model.predict(x)
         self.assertIsInstance(predict, np.number)
+
+    def test_create_from_dataset(self):
+        dataset = Data.create_new_instance_adult()
+        model = RandomForestModel.from_dataset(dataset)
+        self.assertIsInstance(model, RandomForestModel)
+        self.assertIsInstance(model.raw_model, RandomForestClassifier)
 
     ################
     # Util methods #
