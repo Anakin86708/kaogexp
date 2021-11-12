@@ -87,12 +87,14 @@ class LatinSamplerTest(unittest.TestCase):
         amount = 10
         sample = self.instance.realizar_amostragem(input_, amount)
         colunas_numericas = adult.nomes_colunas_numericas
+        colunas_catetgorias = adult.nomes_colunas_categoricas
         sample_num = sample[colunas_numericas]
 
         is_inside_space = partial(self.is_inside_space, epsilon=self.EPSILON, interest_point=input_[colunas_numericas])
         self.assertTrue(is_inside_space(sample_num).all(), "Sample is not inside the space")
-        self.assertNotIn('object', sample.dtypes)
         pd.testing.assert_index_equal(adult.tratador.nomes_colunas_originais, sample.columns)
+        sample_ = sample.sample(1).iloc[0]
+        pd.testing.assert_series_equal(input_[colunas_catetgorias], sample_[colunas_catetgorias], check_names=False)
 
     ################
     # Util methods #

@@ -54,7 +54,16 @@ class LatinSampler(SamplerAbstract):
         # Realiza a transformação para colocar `latin_sample` ao redor de `interest_point_np`
         sample = map(lambda x: min_ + x * (max_ - min_), latin_sample.T)
 
-        return pd.DataFrame(sample, columns=interest_point.index).convert_dtypes()
+        # Reinserir os valores que não puderam ser alterados
+        data_frame = self._reinsert_categorical_data(interest_point, sample)
+        return data_frame
+
+    def _reinsert_categorical_data(self, interest_point, sample):
+        data_frame = pd.DataFrame(sample, columns=interest_point.index).convert_dtypes()
+        non_numeric_cols = self._get_non_numeric_indexes(interest_point)
+        data_frame[non_numeric_cols] = interest_point[non_numeric_cols]
+        data_frame[non_numeric_cols] = data_frame[non_numeric_cols].astype("category")
+        return data_frame
 
     def _get_values_can_change(self, interest_point: pd.Series) -> np.ndarray:
         """
