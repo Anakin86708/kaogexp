@@ -33,8 +33,7 @@ class KAOGExp:
 
         :param instancia: Valor único ou conjunto de dados a serem explicados. Não deve estar tratado.
         :type instancia: Union[pd.Series, pd.DataFrame]
-        :param metodo: Método a ser utilizado para explicar a instância. Deve ser apenas a referência a classe, ao invés
-        do objeto já instânciado.
+        :param metodo: Método a ser utilizado para explicar a instância. Deve ser apenas a referência a classe, ao invés do objeto já instânciado.
         :type metodo: MethodAbstract
         :return: Explicação da instância.
         :rtype: MethodAbstract
@@ -56,7 +55,8 @@ class KAOGExp:
         """
         amostragem = self._realizar_amostragem(instancia)
         y_amostragem = self._classificar_amostragem(amostragem)
-        amostra_completa = pd.concat([amostragem, pd.Series(y_amostragem, name=NOME_COLUNA_Y)], axis=1)
+        amostra_completa = pd.concat([amostragem.append(instancia), pd.Series(y_amostragem, name=NOME_COLUNA_Y)],
+                                     axis=1)
         kaog = self._criar_kaog(amostra_completa)
         return metodo(kaog, instancia)
 
@@ -107,5 +107,4 @@ class KAOGExp:
         categorical_index = list(filter(lambda x: type(x) is int,
                                         [idx if col in self.dataset.nomes_colunas_categoricas else None for idx, col in
                                          enumerate(amostra_completa.columns)]))
-        return KAOG(amostra_completa, target_column=NOME_COLUNA_Y, categorical_index=categorical_index,
-                    normalizar=False)
+        return KAOG(amostra_completa)
