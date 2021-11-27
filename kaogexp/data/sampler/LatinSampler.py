@@ -57,6 +57,11 @@ class LatinSampler(SamplerAbstract):
 
         # Reinserir os valores que não puderam ser alterados
         data_frame = self._reinsert_categorical_data(interest_point, sample)
+
+        # Colocar valores de index a partir do index do ponto de interesse
+        start = int(interest_point.name) + 1
+        end = start + num_samples
+        data_frame.index = range(start, end)
         return data_frame
 
     def _reinsert_categorical_data(self, interest_point, sample):

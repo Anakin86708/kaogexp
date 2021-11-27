@@ -55,8 +55,10 @@ class KAOGExp:
         """
         amostragem = self._realizar_amostragem(instancia)
         y_amostragem = self._classificar_amostragem(amostragem)
-        amostra_completa = pd.concat([amostragem.append(instancia), pd.Series(y_amostragem, name=NOME_COLUNA_Y)],
-                                     axis=1)
+        # amostragem_com_instancia = amostragem.append(instancia)
+        amostragem_com_y = amostragem.copy()
+        amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
+        amostra_completa = amostragem_com_y.append(instancia)
         kaog = self._criar_kaog(amostra_completa)
         return metodo(kaog, instancia)
 
@@ -91,7 +93,7 @@ class KAOGExp:
             raise TypeError(f'`instancia` must be `pd.Series.` Got {type(instancia)}.')
         return self.sampler.realizar_amostragem(instancia, KAOGExp.NUM_SAMPLES)
 
-    def _classificar_amostragem(self, amostragem: pd.DataFrame) -> np.ndarray:
+    def _classificar_amostragem(self, amostragem: pd.DataFrame) -> pd.Series:
         """
         Dado o array de amostragem, classifica-o utilizando o modelo.
 
@@ -101,7 +103,8 @@ class KAOGExp:
         :rtype: np.ndarray
         """
         encoded = self.dataset.tratador.encode(amostragem)
-        return self.modelo.predict(encoded)
+        predict = self.modelo.predict(encoded)
+        return pd.Series(predict, index=amostragem.index, name=NOME_COLUNA_Y)
 
     def _criar_kaog(self, amostra_completa: pd.DataFrame) -> KAOG:
         categorical_index = list(filter(lambda x: type(x) is int,

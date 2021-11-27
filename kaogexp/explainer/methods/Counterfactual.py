@@ -79,7 +79,7 @@ class Counterfactual(MethodAbstract):
         """
         classe_original = self.instancia_original[NOME_COLUNA_Y]
         classe_encontrada = self.kaog.y.loc[index_buscado]
-        return classe_original != classe_encontrada
+        return classe_original != classe_encontrada  # TODO: Buscar uma classe desejada específica
 
     def _e_maior_pureza(self, index_buscado: int):
         """
