@@ -14,21 +14,29 @@ class LatinSampler(SamplerAbstract):
     Latin Sampler is a sampler that samples from a Latin hypercube using `lhsmdu` method.
     """
 
-    def __init__(self, epsilon: Union[float, np.ndarray], seed: int = None):
+    def __init__(self, epsilon: Union[float, np.ndarray], incremento: float = 0.05, seed: int = None):
         """
         Initializes the Latin Sampler.
 
         :param epsilon: Represents the limit of the sampling in each feature. Use a float to represent a limit in all
          features. Use a numpy array to represent a limit in each feature.
         :type epsilon: Union[float, np.ndarray]
+        :param incremento: Represents the increment of the sampling in each feature.
+        :type incremento: float
         :param seed: Seed to be used in the `lhsmdu`.
         :type seed: int
         """
-        self.epsilon = epsilon
+        self.incremento = incremento
+        self._initial_epsilon = epsilon
+        self._epsilon = epsilon
         if seed is None:
             seed = randint(0, (2 ** 32) - 1)
         self.seed = seed
         lhsmdu.setRandomSeed(seed)
+
+    @property
+    def epsilon(self) -> float:
+        return round(self._epsilon, 6)
 
     def realizar_amostragem(self, interest_point: pd.Series, num_samples: int) -> pd.DataFrame:
         """
@@ -63,6 +71,23 @@ class LatinSampler(SamplerAbstract):
         end = start + num_samples
         data_frame.index = range(start, end)
         return data_frame
+
+    def increase_epsilon(self) -> None:
+        """
+        Used to increase the epsilon value.
+        """
+        if isinstance(self.epsilon, float):
+            self._epsilon += self.incremento
+        else:
+            mask = self.epsilon.copy()
+            mask[mask != 0] = self.incremento
+            self._epsilon += mask
+
+    def reset_epsilon(self) -> None:
+        """
+        Retorna o epsilon para o valor inicial.
+        """
+        self._epsilon = self._initial_epsilon
 
     def _reinsert_categorical_data(self, interest_point, sample):
         data_frame = pd.DataFrame(sample, columns=interest_point.index).convert_dtypes()
