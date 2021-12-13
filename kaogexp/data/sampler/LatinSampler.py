@@ -1,3 +1,4 @@
+import warnings
 from random import randint
 from typing import Union
 
@@ -52,30 +53,17 @@ class LatinSampler(SamplerAbstract):
         """
         # Prepara os dados
         interest_point = interest_point.copy().drop(NOME_COLUNA_Y, errors='ignore')
-        values_to_change = self._get_values_can_change(interest_point)
-        interest_point_np = self._sanitize(interest_point).to_numpy()
+        interest_point_np = self._sanitize(interest_point).to_numpy().astype(float)
 
         # Calcula a amostra e os valores para realizar a transformação
-        latin_sample = np.array(lhsmdu.sample(interest_point_np.shape[0], num_samples, randomSeed=self.seed))
-        min_ = (interest_point_np - self.epsilon) * values_to_change
-        max_ = (interest_point_np + self.epsilon) * values_to_change
-
-        # Realiza a transformação para colocar `latin_sample` ao redor de `interest_point_np`
-        sample = map(lambda x: min_ + x * (max_ - min_), latin_sample.T)
-
-        # Reinserir os valores que não puderam ser alterados
-        data_frame = self._reinsert_categorical_data(interest_point, sample)
-
-        # Colocar valores de index a partir do index do ponto de interesse
-        start = int(interest_point.name) + 1
-        end = start + num_samples
-        data_frame.index = range(start, end)
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', category=PendingDeprecationWarning)
+            latin_sample = np.array(lhsmdu.sample(interest_point_np.shape[0], num_samples, randomSeed=self.seed))
+        data_frame = self._prepare_sample(interest_point, interest_point_np, latin_sample, num_samples)
         return data_frame
 
     def increase_epsilon(self) -> None:
-        """
-        Used to increase the epsilon value.
-        """
+        """Used to increase the epsilon value."""
         if isinstance(self.epsilon, float):
             self._epsilon += self.incremento
         else:
@@ -84,10 +72,43 @@ class LatinSampler(SamplerAbstract):
             self._epsilon += mask
 
     def reset_epsilon(self) -> None:
-        """
-        Retorna o epsilon para o valor inicial.
-        """
+        """Retorna o epsilon para o valor inicial."""
         self._epsilon = self._initial_epsilon
+
+    def _prepare_sample(self, interest_point, interest_point_np, latin_sample, num_samples):
+        """
+        Com base nos dados de `interest_point` e `interest_point_np`, coloca o amostra no intervalo desejado, além de
+        colocar os valores de index, de forma que o primeiro valor seja o do ponto de interesse.
+
+        :param interest_point: Ponto de interesse.
+        :type interest_point: pd.Series
+        :param interest_point_np: Ponto de interesse em formato numpy.
+        :type interest_point_np: np.ndarray
+        :param latin_sample: Amostra gerada pelo lhsmdu.
+        :type latin_sample: np.ndarray
+        :param num_samples: Número de amostras que foram geradas.
+        :type num_samples: int
+        :return: DataFrame com as amostras.
+        :rtype: pd.DataFrame
+        """
+        values_to_change = self._get_values_can_change(interest_point)
+        min_ = (interest_point_np - self.epsilon) * values_to_change
+        max_ = (interest_point_np + self.epsilon) * values_to_change
+        # Realiza a transformação para colocar `latin_sample` ao redor de `interest_point_np`
+        sample = map(lambda x: min_ + x * (max_ - min_), latin_sample.T)
+        # Reinserir os valores que não puderam ser alterados
+        data_frame = self._reinsert_categorical_data(interest_point, sample)
+        self._reindex_data(data_frame, interest_point, num_samples)
+        return data_frame
+
+    def _reindex_data(self, data_frame, interest_point, num_samples):
+        """Colocar valores de index a partir do index do ponto de interesse"""
+        try:
+            start = int(interest_point.name) + 1
+        except TypeError:
+            start = 1
+        end = start + num_samples
+        data_frame.index = range(start, end)
 
     def _reinsert_categorical_data(self, interest_point, sample):
         data_frame = pd.DataFrame(sample, columns=interest_point.index).convert_dtypes()

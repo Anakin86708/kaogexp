@@ -2,14 +2,15 @@ import numpy as np
 import pandas as pd
 from kaog import KAOG
 
-from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 
 
 class Counterfactual(MethodAbstract):
 
-    def __init__(self, kaog: KAOG, instancia_explicada: pd.Series):
+    def __init__(self, kaog: KAOG, instancia_explicada: pd.Series, classe_desejada: int):
         super().__init__(kaog, instancia_explicada)
+        self._classe_desejada = classe_desejada
+
         self.distancias_e_vizinhos = self.kaog.distancias_e_vizinhos
         self._instancia_modificada = self._realizar_busca()
 
@@ -20,6 +21,10 @@ class Counterfactual(MethodAbstract):
     @property
     def index_buscado(self):
         return self.instancia_original.name
+
+    @property
+    def classe_desejada(self):
+        return self._classe_desejada
 
     def _realizar_busca(self) -> pd.Series:
         """
@@ -32,7 +37,7 @@ class Counterfactual(MethodAbstract):
         vizinhos = self._obter_vizinhos()
         for vizinho in vizinhos:
             if self._condicao_busca(vizinho):
-                return self._obter_instancia_modificada(vizinho)
+                return self._obter_instancia_modificada(vizinho).copy()
 
     def _obter_instancia_modificada(self, index: int):
         """
@@ -58,28 +63,27 @@ class Counterfactual(MethodAbstract):
     def _condicao_busca(self, index_buscado: int):
         """
         Verifica se a instância procurada satisfaz a condição de busca.
-        Para isso, é preciso que esteja em uma classe diferente e que a pureza do instância encontrada seja maior que a
-        atual.
+        Para isso, é preciso que esteja em uma classe igual a buscada e que a pureza do instância encontrada seja maior
+        que a atual.
 
         :param index_buscado: Índice da instância procurada.
         :type index_buscado: int
         :return: True se satisfazer a condição de busca.
         :rtype: bool
         """
-        return self._e_classe_diferente(index_buscado) and self._e_maior_pureza(index_buscado)
+        return self._e_classe_buscada(index_buscado) and self._e_maior_pureza(index_buscado)
 
-    def _e_classe_diferente(self, index_buscado: int):
+    def _e_classe_buscada(self, index_buscado: int):
         """
-        Verifica se a instância encontrada é de uma classe diferente da instância procurada.
+        Verifica se a instância encontrada é de uma classe igual da classe procurada.
 
         :param index_buscado: Índice da instância procurada.
         :type index_buscado: int
         :return: True se satisfazer a condição da classe.
         :rtype: bool
         """
-        classe_original = self.instancia_original[NOME_COLUNA_Y]
         classe_encontrada = self.kaog.y.loc[index_buscado]
-        return classe_original != classe_encontrada  # TODO: Buscar uma classe desejada específica
+        return self.classe_desejada == classe_encontrada
 
     def _e_maior_pureza(self, index_buscado: int):
         """

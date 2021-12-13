@@ -6,7 +6,7 @@ from kaog import KAOG
 
 class MethodAbstract(ABC):
 
-    def __init__(self, kaog: KAOG, instancia_explicada: pd.Series):
+    def __init__(self, kaog: KAOG, instancia_explicada: pd.Series, **kwargs):
         self.kaog = kaog
         self._instancia_original = instancia_explicada
 

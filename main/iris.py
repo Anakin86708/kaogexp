@@ -28,13 +28,14 @@ sampler = LatinSampler(epsilon=epsilon, seed=seed)
 
 # %%
 explicador = KAOGExp(train_data, model, sampler)
+classe_desejada = 2
 
 print('Realizando explicacao...')
-explicacao = explicador.explicar(test_data.dataset().sample(10), metodo=Counterfactual)
+explicacao = explicador.explicar(test_data.dataset().sample(10), metodo=Counterfactual, classe_desejada=classe_desejada)
 
 # %%
 for item in explicacao:
     try:
         print(item.instancia_modificada)
-    except:
+    except AttributeError:
         print('Empty')

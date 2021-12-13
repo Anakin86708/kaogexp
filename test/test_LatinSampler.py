@@ -1,5 +1,6 @@
 import random
 import unittest
+from copy import deepcopy
 from functools import partial
 from typing import Union
 from unittest import expectedFailure
@@ -44,6 +45,16 @@ class LatinSamplerTest(unittest.TestCase):
         sanitized = self.instance._sanitize(input_)
         np.testing.assert_array_equal(sanitized, expected)
         self.assertTrue(sanitized.dtype, 'float')
+
+    def test_sanitize_real(self):
+        # Sanitize a real series
+        input_ = Data.adult_dataset().loc[0]
+        as_zero = ['workclass', 'education', 'marital-status', 'occupation', 'relationship', 'race', 'sex',
+                   'native-country', 'target']
+        expected: pd.Series = deepcopy(input_)
+        expected[as_zero] = 0
+        sanitized = self.instance._sanitize(input_)
+        pd.testing.assert_series_equal(expected, sanitized, check_dtype=False)
 
     def test_realizar_amostragem_origin(self):
         # Test with a numeric array on origin

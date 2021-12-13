@@ -1,5 +1,5 @@
-from random import choice
-from typing import Union, Type, Tuple
+import warnings
+from typing import Union, Type, Optional
 
 import numpy as np
 import pandas as pd
@@ -10,6 +10,8 @@ from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 from kaogexp.model.ModelAbstract import ModelAbstract
+
+warnings.filterwarnings('ignore', message=r'.*The feature names should match those.*', category=FutureWarning)
 
 
 class KAOGExp:
@@ -23,8 +25,9 @@ class KAOGExp:
 
     def explicar(self,
                  instancia: Union[pd.Series, pd.DataFrame],
-                 metodo: Type[MethodAbstract]
-                 ) -> Union[MethodAbstract, Tuple[MethodAbstract]]:
+                 metodo: Type[MethodAbstract],
+                 **kwargs,
+                 ) -> Union[tuple[Optional[MethodAbstract], ...], MethodAbstract, None]:
         """
         Tem como objetivo explicar `instancia`, utilizando um método definido por `metodo`.
         Para isso, primeiramente é necessário fazer a verificação se os dados condizem com o esperado pelo modelo.
@@ -38,37 +41,41 @@ class KAOGExp:
         :type instancia: Union[pd.Series, pd.DataFrame]
         :param metodo: Método a ser utilizado para explicar a instância. Deve ser apenas a referência a classe, ao invés do objeto já instânciado.
         :type metodo: MethodAbstract
+        :param kwargs: Parâmetros adicionais para o método passado.
+        :type kwargs: object
         :return: Explicação da instância.
-        :rtype: MethodAbstract
+        :rtype: Union[tuple[Optional[MethodAbstract], ...], MethodAbstract, None]
         :raise ValueError: Se o dado não estiver no tipo esperado.
         """
         self._assert_instance_compatibility(instancia)
         if isinstance(instancia, pd.DataFrame):
-            return tuple(self._explicar(instancia, metodo) for _, instancia in instancia.iterrows())
+            return tuple(self._explicar(instancia, metodo, kwargs=kwargs) for _, instancia in instancia.iterrows())
 
         elif isinstance(instancia, pd.Series):
-            return self._explicar(instancia, metodo)
+            return self._explicar(instancia, metodo, kwargs=kwargs)
 
         else:
             raise TypeError(f'Instance must be of type pd.Series or pd.DataFrame. Got {type(instancia)}.')
 
-    def _explicar(self, instancia: pd.Series, metodo: Type[MethodAbstract]) -> MethodAbstract:
+    def _explicar(self, instancia: pd.Series, metodo: Type[MethodAbstract], **kwargs) -> Optional[MethodAbstract]:
         """
         Lógica para a explicação
         """
         amostragem: Union[pd.Series, None] = None
         y_amostragem: Union[pd.Series, None] = None
-        classe_desejada = choice(
-            list(filter(lambda x: x != instancia[NOME_COLUNA_Y], [0, 1, 2])))  # TODO: alterar para classe desejada
-        while not self._amostra_valida(y_amostragem, classe_desejada):
-            amostragem: pd.DataFrame = self._realizar_amostragem(instancia)
-            y_amostragem: pd.Series = self._classificar_amostragem(amostragem)
+        classe_desejada = kwargs.get('classe_desejada', None)
+        try:
+            while not self._amostra_valida(y_amostragem, classe_desejada):
+                amostragem: pd.DataFrame = self._realizar_amostragem(instancia)
+                y_amostragem: pd.Series = self._classificar_amostragem(amostragem)
 
-        amostragem_com_y = amostragem.copy()
-        amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
-        amostra_completa = amostragem_com_y.append(instancia)
-        kaog = self._criar_kaog(amostra_completa)
-        return metodo(kaog, instancia)
+            amostragem_com_y = amostragem.copy()
+            amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
+            amostra_completa = amostragem_com_y.append(instancia)
+            kaog = self._criar_kaog(amostra_completa)
+            return metodo(kaog, instancia, **kwargs)
+        except ValueError:
+            return None
 
     def _assert_instance_compatibility(self, instance: Union[pd.Series, pd.DataFrame]) -> None:
         """

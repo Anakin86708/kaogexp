@@ -43,7 +43,7 @@ class DatasetTreatment(TreatmentAbstract):
         pass
 
     def decode(self, instancia: pd.Series) -> pd.Series:
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def tratar_na(dataset: pd.DataFrame, valores_na: Tuple) -> pd.DataFrame:
