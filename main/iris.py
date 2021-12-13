@@ -1,5 +1,7 @@
 # %%
 # Carregar os dados padronizados de treino e teste do Iris
+import logging
+
 import pandas as pd
 
 from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
@@ -7,6 +9,9 @@ from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
 from kaogexp.model.RandomForestModel import RandomForestModel
+from main.heom import MyHEOM
+
+logging.basicConfig(level=logging.DEBUG)
 
 categorical_columns = []
 index = pd.Index(categorical_columns)
@@ -23,15 +28,19 @@ model = RandomForestModel(x, y)
 
 # %%
 epsilon = 0.05
+limite_epsilon = 1.0
 seed = 42
-sampler = LatinSampler(epsilon=epsilon, seed=seed)
-
+sampler = LatinSampler(epsilon=epsilon, seed=seed, limite_epsilon=limite_epsilon)
+# %%
+heom = MyHEOM(test_data.dataset(), test_data.nomes_colunas_categoricas)
+metodo = Counterfactual
+metodo.set_metrica_distancia(heom.heom)
 # %%
 explicador = KAOGExp(train_data, model, sampler)
 classe_desejada = 2
 
 print('Realizando explicacao...')
-explicacao = explicador.explicar(test_data.dataset().sample(10), metodo=Counterfactual, classe_desejada=classe_desejada)
+explicacao = explicador.explicar(test_data.dataset().sample(10), metodo=metodo, classe_desejada=classe_desejada)
 
 # %%
 for item in explicacao:

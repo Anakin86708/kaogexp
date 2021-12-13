@@ -15,7 +15,8 @@ class LatinSampler(SamplerAbstract):
     Latin Sampler is a sampler that samples from a Latin hypercube using `lhsmdu` method.
     """
 
-    def __init__(self, epsilon: Union[float, np.ndarray], incremento: float = 0.05, seed: int = None):
+    def __init__(self, epsilon: Union[float, np.ndarray], incremento: float = 0.05, limite_epsilon: float = 1.0,
+                 seed: int = None):
         """
         Initializes the Latin Sampler.
 
@@ -29,6 +30,7 @@ class LatinSampler(SamplerAbstract):
         """
         self.incremento = incremento
         self._initial_epsilon = epsilon
+        self._limite_epsilon = limite_epsilon
         self._epsilon = epsilon
         if seed is None:
             seed = randint(0, (2 ** 32) - 1)
@@ -64,6 +66,9 @@ class LatinSampler(SamplerAbstract):
 
     def increase_epsilon(self) -> None:
         """Used to increase the epsilon value."""
+        if (self.epsilon + self.incremento) > self._limite_epsilon:
+            self.reset_epsilon()
+            raise ValueError("Epsilon value cannot be greater than {}".format(self._limite_epsilon))
         if isinstance(self.epsilon, float):
             self._epsilon += self.incremento
         else:

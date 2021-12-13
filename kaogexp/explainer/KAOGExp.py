@@ -1,3 +1,4 @@
+import logging
 import warnings
 from typing import Union, Type, Optional
 
@@ -69,12 +70,14 @@ class KAOGExp:
                 amostragem: pd.DataFrame = self._realizar_amostragem(instancia)
                 y_amostragem: pd.Series = self._classificar_amostragem(amostragem)
 
+            logging.info(f'Amostragem válida encontrada. Realizando KAOG.\n\n')
             amostragem_com_y = amostragem.copy()
             amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
             amostra_completa = amostragem_com_y.append(instancia)
             kaog = self._criar_kaog(amostra_completa)
             return metodo(kaog, instancia, **kwargs)
         except ValueError:
+            logging.info('Não foi possível encontrar uma amostra válida.\n\n')
             return None
 
     def _assert_instance_compatibility(self, instance: Union[pd.Series, pd.DataFrame]) -> None:
@@ -122,11 +125,9 @@ class KAOGExp:
         Incrementa o valor de epsilon, caso a amostragem não seja válida.
         Se atingir o valor máximo, lança uma exceção.
 
-        :raise ValueError: Se o valor de epsilon atingir o valor máximo.
+        :raise ValueError: se o valor de epsilon atingir o valor máximo.
         """
         self.sampler.increase_epsilon()
-        if self.sampler.epsilon > self.LIMITE_EPSILON:
-            raise ValueError(f'Epsilon is greater than {self.LIMITE_EPSILON}.')
 
     def _reset_epsilon(self):
         """
@@ -143,7 +144,7 @@ class KAOGExp:
         :return: Amostragem ao redor do ponto de instância.
         :rtype: np.ndarray
         """
-        print(f'Realizando amostragem com epsilon {self.sampler.epsilon}.')
+        logging.info(f'Realizando amostragem com epsilon {self.sampler.epsilon}.')
         if not isinstance(instancia, pd.Series):
             raise TypeError(f'`instancia` must be `pd.Series.` Got {type(instancia)}.')
         return self.sampler.realizar_amostragem(instancia, KAOGExp.NUM_SAMPLES)

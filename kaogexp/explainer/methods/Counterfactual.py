@@ -26,6 +26,18 @@ class Counterfactual(MethodAbstract):
     def classe_desejada(self):
         return self._classe_desejada
 
+    @staticmethod
+    def set_metrica_distancia(metrica):
+        """
+        Define a métrica de distância a ser utilizada para o KAOG.
+        Pode ser definida como uma função ou como um nome de métrica reconhecida pelo
+        NearestNeighbors
+
+        :param metrica:
+        :return:
+        """
+        KAOG.set_metrica_distancia(metrica)
+
     def _realizar_busca(self) -> pd.Series:
         """
         Utilizando o KAOG, devem ser encontrados os valores mais próximos da instância procurada.
