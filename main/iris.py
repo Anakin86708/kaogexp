@@ -32,7 +32,7 @@ limite_epsilon = 1.0
 seed = 42
 sampler = LatinSampler(epsilon=epsilon, seed=seed, limite_epsilon=limite_epsilon)
 # %%
-heom = MyHEOM(test_data.dataset(), test_data.nomes_colunas_categoricas)
+heom = MyHEOM(test_data.x(), test_data.nomes_colunas_categoricas)
 metodo = Counterfactual
 metodo.set_metrica_distancia(heom.heom)
 # %%
@@ -40,7 +40,7 @@ explicador = KAOGExp(train_data, model, sampler)
 classe_desejada = 2
 
 print('Realizando explicacao...')
-explicacao = explicador.explicar(test_data.dataset().sample(10), metodo=metodo, classe_desejada=classe_desejada)
+explicacao = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, classe_desejada=classe_desejada)
 
 # %%
 for item in explicacao:

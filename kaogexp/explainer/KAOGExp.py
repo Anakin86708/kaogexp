@@ -50,31 +50,37 @@ class KAOGExp:
         """
         self._assert_instance_compatibility(instancia)
         if isinstance(instancia, pd.DataFrame):
-            return tuple(self._explicar(instancia, metodo, kwargs=kwargs) for _, instancia in instancia.iterrows())
+            total = instancia.shape[0]
+            return tuple(self._explicar(instancia, metodo, index=i, total=total, **kwargs) for i, (_, instancia) in
+                         enumerate(instancia.iterrows()))
 
         elif isinstance(instancia, pd.Series):
-            return self._explicar(instancia, metodo, kwargs=kwargs)
+            return self._explicar(instancia, metodo, **kwargs)
 
         else:
             raise TypeError(f'Instance must be of type pd.Series or pd.DataFrame. Got {type(instancia)}.')
 
-    def _explicar(self, instancia: pd.Series, metodo: Type[MethodAbstract], **kwargs) -> Optional[MethodAbstract]:
+    def _explicar(self, instancia: pd.Series, metodo: Type[MethodAbstract], index=0, total=1, **kwargs) -> Optional[
+        MethodAbstract]:
         """
         Lógica para a explicação
         """
+        logging.info(f'Explaining instance {index + 1} of {total}')
         amostragem: Union[pd.Series, None] = None
         y_amostragem: Union[pd.Series, None] = None
         classe_desejada = kwargs.get('classe_desejada', None)
         try:
-            while not self._amostra_valida(y_amostragem, classe_desejada):
+            while not self._amostra_valida(y_amostragem,
+                                           classe_desejada):  # Talvez o amostra_valida tenha que estar no método
                 amostragem: pd.DataFrame = self._realizar_amostragem(instancia)
                 y_amostragem: pd.Series = self._classificar_amostragem(amostragem)
 
-            logging.info(f'Amostragem válida encontrada. Realizando KAOG.\n\n')
+            logging.info(f'Amostragem válida encontrada. Realizando KAOG.')
             amostragem_com_y = amostragem.copy()
             amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
             amostra_completa = amostragem_com_y.append(instancia)
             kaog = self._criar_kaog(amostra_completa)
+            logging.info(f'KAOG criado.\n\n')
             return metodo(kaog, instancia, **kwargs)
         except ValueError:
             logging.info('Não foi possível encontrar uma amostra válida.\n\n')
@@ -113,7 +119,7 @@ class KAOGExp:
         if y_amostragem is None:
             return False
 
-        desejada_any = (y_amostragem == classe_desejada).any()
+        desejada_any = y_amostragem.isin([classe_desejada]).any()
         if not desejada_any:
             self._incrementar_epsilon()
         else:
