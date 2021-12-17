@@ -47,7 +47,8 @@ class Counterfactual(MethodAbstract):
         :rtype: pd.Series
         """
         vizinhos = self._obter_vizinhos()
-        for vizinho in vizinhos:
+        vizinhos_desejados = self.kaog.y.loc[vizinhos].where(lambda x: x == self.classe_desejada).dropna()
+        for vizinho in vizinhos_desejados.index:
             if self._condicao_busca(vizinho):
                 return self._obter_instancia_modificada(vizinho).copy()
 
