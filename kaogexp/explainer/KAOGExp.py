@@ -16,6 +16,7 @@ warnings.filterwarnings('ignore', message=r'.*The feature names should match tho
 
 
 class KAOGExp:
+    MIN_PERCENT_DESIRED = 0.2  # TOOO: experimentar com esses valores no futuro
     NUM_SAMPLES = 100
     LIMITE_EPSILON = 1
 
@@ -119,12 +120,19 @@ class KAOGExp:
         if y_amostragem is None:
             return False
 
-        desejada_any = y_amostragem.isin([classe_desejada]).any()
-        if not desejada_any:
+        # Verifica se há uma porcentagem de instâncias com a classe desejada
+        try:
+            porcentagem_classe_desejada = y_amostragem.value_counts().loc[classe_desejada] / y_amostragem.shape[0]
+        except KeyError:
+            porcentagem_classe_desejada = 0
+        is_valido = porcentagem_classe_desejada >= KAOGExp.MIN_PERCENT_DESIRED
+
+        # Determina o epsilon
+        if not is_valido:
             self._incrementar_epsilon()
         else:
             self._reset_epsilon()
-        return desejada_any
+        return is_valido
 
     def _incrementar_epsilon(self) -> None:
         """
