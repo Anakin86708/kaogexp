@@ -23,6 +23,7 @@ class KAOGExp:
         self.dataset = dataset
         self.modelo = modelo
         self.sampler = sampler
+        self._busca_invalida = False
 
     def explicar(self,
                  instancia: Union[pd.Series, pd.DataFrame],
@@ -65,19 +66,13 @@ class KAOGExp:
         """
         Lógica para a explicação
         """
-        logging.info(f'Explaining instance {index + 1} of {total}')
-        amostragem: Union[pd.Series, None] = None
-        y_amostragem: Union[pd.Series, None] = None
+        logging.info(f'\n\nExplaining instance {index + 1} of {total}')
         classe_desejada = kwargs.get('classe_desejada', None)
-        busca_invalida = False
         self._reset_epsilon()
 
         try:
             while True:
-                while busca_invalida or not self._amostra_valida(y_amostragem, classe_desejada):
-                    amostragem: pd.DataFrame = self._realizar_amostragem(instancia)
-                    y_amostragem: pd.Series = self._classificar_amostragem(amostragem)
-                    busca_invalida = False
+                amostragem, y_amostragem = self._obter_amostra_valida(classe_desejada, instancia)
 
                 logging.info(f'Amostragem válida encontrada. Realizando KAOG.')
                 amostragem_com_y = amostragem.copy()
@@ -89,16 +84,24 @@ class KAOGExp:
                     return metodo(kaog, instancia, **kwargs)
                 except RuntimeError as e:
                     logging.info(f'{e}\nContinuando amostragem...')
-                    busca_invalida = self._continuar_amostragem(busca_invalida)
+                    self._continuar_amostragem()
 
         except ValueError:
             logging.info('Não foi possível encontrar uma amostra válida.\n\n')
             return None
 
-    def _continuar_amostragem(self, busca_invalida):
+    def _obter_amostra_valida(self, classe_desejada: int, instancia: pd.Series):
+        amostragem: Union[pd.Series, None] = None
+        y_amostragem: Union[pd.Series, None] = None
+        while self._busca_invalida or not self._amostra_valida(y_amostragem, classe_desejada):
+            amostragem: pd.DataFrame = self._realizar_amostragem(instancia)
+            y_amostragem: pd.Series = self._classificar_amostragem(amostragem)
+            self._busca_invalida = False
+        return amostragem, y_amostragem
+
+    def _continuar_amostragem(self):
         self._incrementar_epsilon()
-        busca_invalida = True
-        return busca_invalida
+        self._busca_invalida = True
 
     def _assert_instance_compatibility(self, instance: Union[pd.Series, pd.DataFrame]) -> None:
         """
