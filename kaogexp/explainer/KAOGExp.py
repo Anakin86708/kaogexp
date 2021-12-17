@@ -69,22 +69,36 @@ class KAOGExp:
         amostragem: Union[pd.Series, None] = None
         y_amostragem: Union[pd.Series, None] = None
         classe_desejada = kwargs.get('classe_desejada', None)
-        try:
-            while not self._amostra_valida(y_amostragem,
-                                           classe_desejada):  # Talvez o amostra_valida tenha que estar no método
-                amostragem: pd.DataFrame = self._realizar_amostragem(instancia)
-                y_amostragem: pd.Series = self._classificar_amostragem(amostragem)
+        busca_invalida = False
+        self._reset_epsilon()
 
-            logging.info(f'Amostragem válida encontrada. Realizando KAOG.')
-            amostragem_com_y = amostragem.copy()
-            amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
-            amostra_completa = amostragem_com_y.append(instancia)
-            kaog = self._criar_kaog(amostra_completa)
-            logging.info(f'KAOG criado.\n\n')
-            return metodo(kaog, instancia, **kwargs)
+        try:
+            while True:
+                while busca_invalida or not self._amostra_valida(y_amostragem, classe_desejada):
+                    amostragem: pd.DataFrame = self._realizar_amostragem(instancia)
+                    y_amostragem: pd.Series = self._classificar_amostragem(amostragem)
+                    busca_invalida = False
+
+                logging.info(f'Amostragem válida encontrada. Realizando KAOG.')
+                amostragem_com_y = amostragem.copy()
+                amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
+                amostra_completa = amostragem_com_y.append(instancia)
+                kaog = self._criar_kaog(amostra_completa)
+                logging.info(f'KAOG criado.')
+                try:
+                    return metodo(kaog, instancia, **kwargs)
+                except RuntimeError as e:
+                    logging.info(f'{e}\nContinuando amostragem...')
+                    busca_invalida = self._continuar_amostragem(busca_invalida)
+
         except ValueError:
             logging.info('Não foi possível encontrar uma amostra válida.\n\n')
             return None
+
+    def _continuar_amostragem(self, busca_invalida):
+        self._incrementar_epsilon()
+        busca_invalida = True
+        return busca_invalida
 
     def _assert_instance_compatibility(self, instance: Union[pd.Series, pd.DataFrame]) -> None:
         """
@@ -122,8 +136,6 @@ class KAOGExp:
         desejada_any = y_amostragem.isin([classe_desejada]).any()
         if not desejada_any:
             self._incrementar_epsilon()
-        else:
-            self._reset_epsilon()
         return desejada_any
 
     def _incrementar_epsilon(self) -> None:

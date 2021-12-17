@@ -51,6 +51,7 @@ class Counterfactual(MethodAbstract):
         for vizinho in vizinhos_desejados.index:
             if self._condicao_busca(vizinho):
                 return self._obter_instancia_modificada(vizinho).copy()
+        raise RuntimeError("Não foi possível encontrar uma instância que satisfaça a condição de busca.")
 
     def _obter_instancia_modificada(self, index: int):
         """
