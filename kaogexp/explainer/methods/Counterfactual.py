@@ -69,8 +69,7 @@ class Counterfactual(MethodAbstract):
         :rtype: np.ndarray
         """
         dist = self.distancias_e_vizinhos
-        k = self.kaog.x.shape[0] - 1
-        return dist.k_vizinhos_mais_proximos_de(k, self.index_buscado)
+        return dist.k_vizinhos_mais_proximos_de(self.index_buscado)
 
     def _condicao_busca(self, index_buscado: int):
         """

@@ -30,9 +30,11 @@ class NewDistance:
         :param y: Series with the second data.
         :return: The normalized eucliian distance between the two series.
         """
-        x_, y_ = (self._apply_dummy(pd.Series(x)), self._apply_dummy(pd.Series(y))) if not self.cat_cols.empty else (
-        x, y)
-        return np.sqrt(np.sum(np.square((x_ - y_) / self._range)))
+        if not self.cat_cols.empty:
+            x_, y_ = self._apply_dummy(pd.Series(x)), self._apply_dummy(pd.Series(y))
+        else:
+            x_, y_ = x, y
+        return np.sqrt(np.sum(np.square(np.divide((x_ - y_), self._range))))
 
     def _get_range(self):
         """Get the range of the data.
