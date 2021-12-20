@@ -45,6 +45,6 @@ explicacao = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, c
 # %%
 for item in explicacao:
     try:
-        print(item.instancia_modificada)
+        print(item)
     except AttributeError:
         print('Empty')

@@ -26,6 +26,14 @@ class Counterfactual(MethodAbstract):
     def classe_desejada(self):
         return self._classe_desejada
 
+    @property
+    def pureza_original(self):
+        return self.kaog.grafo_otimo.pureza(self.instancia_original.name)
+
+    @property
+    def pureza_modificada(self):
+        return self.kaog.grafo_otimo.pureza(self.instancia_modificada.name)
+
     @staticmethod
     def set_metrica_distancia(metrica):
         """
@@ -111,3 +119,14 @@ class Counterfactual(MethodAbstract):
         pureza_original = self.kaog.grafo_otimo.pureza(self.instancia_original.name)
         pureza_encontrada = self.kaog.grafo_otimo.pureza(index_buscado)
         return pureza_encontrada >= pureza_original
+
+    def __str__(self):
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None):
+            return f"""
+Counterfactual:
+Instância original:\n{self.instancia_original}\n
+Instância modificada:\n{self._instancia_modificada}\n
+Classe desejada: {self.classe_desejada}
+Pureza original: {self.pureza_original}
+Pureza modificada: {self.pureza_modificada}
+"""
