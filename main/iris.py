@@ -40,7 +40,7 @@ explicador = KAOGExp(train_data, model, sampler)
 classe_desejada = 2
 
 print('Realizando explicacao...')
-explicacao = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, classe_desejada=classe_desejada)
+explicacao = explicador.explicar(test_data.dataset().sample(1), metodo=metodo, classe_desejada=classe_desejada)
 
 # %%
 for item in explicacao:

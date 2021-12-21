@@ -81,7 +81,8 @@ class KAOGExp:
                 kaog = self._criar_kaog(amostra_completa)
                 logging.info(f'KAOG criado.')
                 try:
-                    return metodo(kaog, instancia, **kwargs)
+                    result = metodo(kaog, instancia, **kwargs)
+                    return result  # TODO: otimizar as variáveis alteradas
                 except RuntimeError as e:
                     logging.info(f'{e}\nContinuando amostragem...')
                     self._continuar_amostragem()
