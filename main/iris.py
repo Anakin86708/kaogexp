@@ -8,6 +8,7 @@ from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
+from kaogexp.metrics.dispersao import Dispersao
 from kaogexp.metrics.validity import Validity
 from kaogexp.model.RandomForestModel import RandomForestModel
 from main.new_distance import NewDistance
@@ -52,8 +53,11 @@ for item in explicacao:
 
 # %%
 # Métricas
-# Validade
 validades = [Validity.calcular(item) for item in explicacao]
+dispersao = [Dispersao.calcular(item) for item in explicacao]
 
 print('Validade:', validades)
 print('Proporção de validade: %.3f' % (validades.count(True) / len(validades)))
+print('Dispersão:', dispersao)
+fig = Dispersao.plot(dispersao)
+fig.show()
