@@ -15,17 +15,16 @@ class OtimizacaoTest(unittest.TestCase):
         original = pd.Series({'a': 1, 'b': 2, 'c': 3})
         instance._instancia_original = original.copy()
         modificada = pd.Series({'a': 1, 'b': 5, 'c': 6})
-        esperado = [
+        esperado = pd.DataFrame([
+            pd.Series({'a': 1, 'b': 5, 'c': 6}),
+            pd.Series({'a': 1, 'b': 2, 'c': 6}),
             pd.Series({'a': 1, 'b': 2, 'c': 3}),
             pd.Series({'a': 1, 'b': 5, 'c': 3}),
-            pd.Series({'a': 1, 'b': 2, 'c': 6}),
-            pd.Series({'a': 1, 'b': 5, 'c': 6}),
-        ]
+        ])
 
         result = instance._permutar_features(modificada, [], ['a', 'b', 'c'])
         self.assertEqual(len(esperado), len(result))
-        for item in esperado:
-            self.assertIn(item, result)
+        pd.testing.assert_frame_equal(esperado, result, check_dtype=False, check_names=False, check_like=True)
 
 
 if __name__ == '__main__':

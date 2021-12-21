@@ -34,7 +34,19 @@ class SparsityOptimization:
         # Obter pemutacoes de features
 
     def _permutar_features(self, instancia: pd.Series, changed: List, remaining: List):
-        permutacoes = [instancia.copy()]
+        """
+        Realiza a permutação de features, revertendo as features que tiveram alguma alteração para o valor original.
+
+        :param instancia: Instância que foi alterada.
+        :type instancia: pd.Series
+        :param changed: Lista com os nomes das colunas que foram alteradas.
+        :type changed: List
+        :param remaining: Lista com os nomes das colunas que não foram alteradas ainda.
+        :type remaining: List
+        :return: Todas as possíveis permutações de features.
+        :rtype: pd.DataFrame
+        """
+        permutacoes = pd.DataFrame([instancia.copy()])
         intalteradas = []
         if len(remaining) == 0:
             return permutacoes
@@ -44,7 +56,8 @@ class SparsityOptimization:
             if alterada[item] != self._instancia_original[item]:
                 alterada[item] = self._instancia_original[item]
                 rem = list(filter(lambda x: x != item and x not in intalteradas, remaining))
-                permutacoes.extend(self._permutar_features(alterada, changed + [item], rem))
+                permutacoes = permutacoes.append(self._permutar_features(alterada, changed + [item], rem),
+                                                 ignore_index=True)
             else:
                 intalteradas.append(item)
-        return permutacoes
+        return permutacoes.drop_duplicates()
