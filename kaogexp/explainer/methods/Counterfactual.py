@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from kaog import KAOG
 
+from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 
 
@@ -25,6 +26,14 @@ class Counterfactual(MethodAbstract):
     @property
     def classe_desejada(self):
         return self._classe_desejada
+
+    @property
+    def classe_modificada(self):
+        return self.instancia_modificada.loc[NOME_COLUNA_Y]
+
+    @property
+    def classe_original(self):
+        return self.instancia_original.loc[NOME_COLUNA_Y]
 
     @property
     def pureza_original(self):
