@@ -8,6 +8,7 @@ class NewDistance:
         self._data = data.copy()
         self._cat_cols = cat_cols.copy()
         self._range = self._get_range()
+        self._dummy_cols = pd.get_dummies(data, columns=cat_cols).columns
 
     @property
     def data(self):
@@ -44,9 +45,8 @@ class NewDistance:
         :return: Series with the range
         :rtype: pd.Series
         """
-        range_ = abs(self._data.max() - self._data.min())
-        range_[self._cat_cols] = 1
-        return range_
+        return pd.get_dummies(self.data, columns=self.cat_cols).apply(
+            lambda x: 1 if x.name in self.cat_cols else abs(x.max() - x.min()))
 
     def _apply_dummy(self, x: pd.Series) -> pd.Series:
         """Apply the dummy function to the series.
@@ -58,6 +58,9 @@ class NewDistance:
         :return: Series with one-hot encoding.
         :rtype: pd.Series
         """
-        dummies = pd.get_dummies(x, columns=self._cat_cols)
-        dummies[self._cat_cols] = dummies[self._cat_cols] * np.sqrt(.5)
-        return dummies
+        dummies = pd.get_dummies(pd.DataFrame([x]), columns=self.cat_cols)  # Apply dummy function
+        missing = self._dummy_cols.difference(dummies.columns)  # Verify if there are missing columns
+        dummies = dummies.assign(**{col: 0 for col in missing})  # Set missing columns to 0
+        new_dummies_cols = dummies.columns.difference(x.index)  # Get columns names as dummies
+        dummies[new_dummies_cols] = dummies[new_dummies_cols] * np.sqrt(.5)  # Replace categorical data by sqrt(0.5)
+        return dummies.iloc[0]
