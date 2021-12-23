@@ -2,14 +2,19 @@ import numpy as np
 import pandas as pd
 from kaog import KAOG
 
+from kaogexp.data.normalizer.NormalizerAbstract import NormalizerAbstract
+from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 
 
 class Counterfactual(MethodAbstract):
 
-    def __init__(self, kaog: KAOG, instancia_explicada: pd.Series, classe_desejada: int):
+    def __init__(self, kaog: KAOG, instancia_explicada: pd.Series, classe_desejada: int,
+                 tratador_associado: TreatmentAbstract, normalizador_associado: NormalizerAbstract):
         super().__init__(kaog, instancia_explicada)
         self._classe_desejada = classe_desejada
+        self.tratador_associado = tratador_associado
+        self.normalizador_associado = normalizador_associado
 
         self.distancias_e_vizinhos = self.kaog.distancias_e_vizinhos
         self._instancia_modificada = self._realizar_busca()
@@ -124,8 +129,8 @@ class Counterfactual(MethodAbstract):
         with pd.option_context('display.max_rows', None, 'display.max_columns', None):
             return f"""
 Counterfactual:
-Instância original:\n{self.instancia_original}\n
-Instância modificada:\n{self._instancia_modificada}\n
+Instância original:\n{self.normalizador_associado.inverse_transform(self.instancia_original)}\n
+Instância modificada:\n{self.normalizador_associado.inverse_transform(self._instancia_modificada)}\n
 Classe desejada: {self.classe_desejada}
 Pureza original: {self.pureza_original}
 Pureza modificada: {self.pureza_modificada}

@@ -38,9 +38,12 @@ metodo.set_metrica_distancia(dist.calculate)
 # %%
 explicador = KAOGExp(train_data, model, sampler)
 classe_desejada = 2
+tratador_associado = train_data.tratador
+normalizador_associado = train_data.normalizador
 
 print('Realizando explicacao...')
-explicacao = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, classe_desejada=classe_desejada)
+explicacao = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, classe_desejada=classe_desejada,
+                                 tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
 # %%
 for item in explicacao:
