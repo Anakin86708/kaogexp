@@ -31,6 +31,11 @@ class NewDistance:
         :param y: Series with the second data.
         :return: The normalized eucliian distance between the two series.
         """
+        if isinstance(x, np.ndarray):
+            x = pd.Series(x, index=self.data.columns)
+        if isinstance(y, np.ndarray):
+            y = pd.Series(y, index=self.data.columns)
+
         if not self.cat_cols.empty:
             x_, y_ = self._apply_dummy(pd.Series(x)), self._apply_dummy(pd.Series(y))
         else:

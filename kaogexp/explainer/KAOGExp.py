@@ -86,8 +86,8 @@ class KAOGExp:
                     logging.info(f'{e}\nContinuando amostragem...')
                     self._continuar_amostragem()
 
-        except ValueError:
-            logging.info('Não foi possível encontrar uma amostra válida.\n\n')
+        except ValueError as e:
+            logging.info(f'Não foi possível encontrar uma amostra válida.\n{e}\n\n')
             return None
 
     def _obter_amostra_valida(self, classe_desejada: int, instancia: pd.Series):
@@ -184,7 +184,5 @@ class KAOGExp:
         return pd.Series(predict, index=amostragem.index, name=NOME_COLUNA_Y)
 
     def _criar_kaog(self, amostra_completa: pd.DataFrame) -> KAOG:
-        categorical_index = list(filter(lambda x: type(x) is int,
-                                        [idx if col in self.dataset.nomes_colunas_categoricas else None for idx, col in
-                                         enumerate(amostra_completa.columns)]))
-        return KAOG(amostra_completa)
+        colunas_categoricas = self.dataset.nomes_colunas_categoricas
+        return KAOG(amostra_completa, colunas_categoricas)
