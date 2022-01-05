@@ -23,7 +23,6 @@ class CERScore:
         :param x: Lista contendo as instâncias de Contrastive ou Counterfactual.
         :param distancias: Lista que corresponde a distância de entre o ponto de interesse e a instância encontrada de cada item de `x`.
         :return: Valor esperado das distâncias.
-
         """
         return self._expected(x, distancias)
 
