@@ -5,6 +5,12 @@ import pandas as pd
 class NewDistance:
 
     def __init__(self, data: pd.DataFrame, cat_cols: pd.Index):
+        """
+        :param data: Utilizado para determinar o range dos dados.
+        :type data: pd.DataFrame
+        :param cat_cols: Colunas de `data` que serão tratadas como categóricas.
+        :type cat_cols: pd.Index
+        """
         self._data = data.copy()
         self._cat_cols = cat_cols.copy()
         self._range = self._get_range()

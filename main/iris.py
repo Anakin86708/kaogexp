@@ -8,6 +8,10 @@ from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
+from kaogexp.metrics.CERScore import CERScore
+from kaogexp.metrics.dispersao import Dispersao
+from kaogexp.metrics.proximity import Proximity
+from kaogexp.metrics.validity import Validity
 from kaogexp.model.RandomForestModel import RandomForestModel
 from main.new_distance import NewDistance
 
@@ -51,3 +55,25 @@ for item in explicacao:
         print(item)
     except AttributeError:
         print('Empty')
+
+# %%
+# Métricas
+prox = Proximity(dist.calculate)
+cers = CERScore(dist.calculate)
+validades = []
+dispersao = []
+proximidades = []
+for item in explicacao:
+    validades.append(Validity.calcular(item))
+    dispersao.append(Dispersao.calcular(item))
+    proximidades.append(prox.calcular(item))
+cerscore = cers.calcular(explicacao, proximidades)
+
+print('Validade:', validades)
+print('Proporção de validade: %.3f' % (validades.count(True) / len(validades)))
+print('Dispersão:', dispersao)
+fig = Dispersao.plot(dispersao)
+fig.show()
+print('Proximidade:', proximidades)
+print('Média:\n', pd.Series(proximidades).describe())
+print('CERScore:', cerscore)
