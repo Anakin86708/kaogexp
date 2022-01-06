@@ -5,14 +5,11 @@ from unittest import expectedFailure
 import pandas as pd
 
 from kaogexp.data.loader import NOME_COLUNA_Y
+from kaogexp.metrics.CERScore import CERScore
 from kaogexp.metrics.dispersao import Dispersao
 from kaogexp.metrics.proximity import Proximity
 from kaogexp.metrics.validity import Validity
 from main.new_distance import NewDistance
-
-
-def create_data(original, modificada):
-    return pd.DataFrame([original, modificada])
 
 
 class FakeCounterfactual:
@@ -193,8 +190,36 @@ class ValidityTest(unittest.TestCase):
 class CERScoreTest(unittest.TestCase):
 
     def test_numeric(self):
-        # TODO: implementar
-        pass
+        c1 = FakeCounterfactual(
+            pd.Series({'a': 1, 'b': 2, 'c': 3, 'target': 1}),
+            pd.Series({'a': 1, 'b': 5, 'c': 6, 'target': 0})
+        )
+        dist_c1 = sqrt(2)
+        c2 = FakeCounterfactual(
+            pd.Series({'a': 0, 'b': 1, 'c': 1, 'target': 0}),
+            pd.Series({'a': 0, 'b': 1, 'c': 1, 'target': 0})
+        )
+        dist_c2 = 0
+        c3 = FakeCounterfactual(
+            pd.Series({'a': 1, 'b': 2, 'c': 3, 'target': 1}),
+            pd.Series({'a': 1, 'b': 5, 'c': 6, 'target': 0})
+        )
+        dist_c3 = sqrt(2)
+        counterfactuals = [c1, c2, c3]
+        expected = .92436
+
+        data = pd.DataFrame([
+            pd.Series({'a': 1, 'b': 2, 'c': 3, 'target': 1}),
+            pd.Series({'a': 1, 'b': 5, 'c': 6, 'target': 0}),
+            pd.Series({'a': 0, 'b': 1, 'c': 1, 'target': 0}),
+            pd.Series({'a': 0, 'b': 1, 'c': 1, 'target': 0}),
+            pd.Series({'a': 1, 'b': 2, 'c': 3, 'target': 1}),
+            pd.Series({'a': 1, 'b': 5, 'c': 6, 'target': 0})
+        ])
+        dist = NewDistance(data, pd.Index([]))
+        cers = CERScore(dist.calculate)
+        result = cers.calcular(counterfactuals)
+        self.assertAlmostEqual(expected, result, places=5)
 
 
 if __name__ == '__main__':

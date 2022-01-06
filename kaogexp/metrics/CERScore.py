@@ -38,7 +38,7 @@ class CERScore:
         """
         try:
             if distancias is None:
-                distancias = [self.metodo_distancias(instancia) for instancia in x]
+                distancias = [self._calcular_distancia(instancia) for instancia in x]
 
             filtred_distances = filter(lambda item: item is not None, distancias)
             return self._mean(distancias, filtred_distances)
@@ -55,3 +55,6 @@ class CERScore:
         :return: Média das distâncias.
         """
         return sum(filtred_distances) / len(distancias)
+
+    def _calcular_distancia(self, instancia: MethodAbstract):
+        return self.metodo_distancias(instancia.instancia_original, instancia.instancia_modificada)
