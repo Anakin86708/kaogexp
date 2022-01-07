@@ -11,7 +11,7 @@ from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 class Counterfactual(MethodAbstract):
 
     def __init__(self, kaog: KAOG, instancia_explicada: pd.Series, classe_desejada: int,
-                 tratador_associado: TreatmentAbstract, normalizador_associado: NormalizerAbstract):
+                 tratador_associado: TreatmentAbstract = None, normalizador_associado: NormalizerAbstract = None):
         super().__init__(kaog, instancia_explicada)
         self._classe_desejada = classe_desejada
         self.tratador_associado = tratador_associado
@@ -134,12 +134,33 @@ class Counterfactual(MethodAbstract):
         pureza_encontrada = self.kaog.grafo_otimo.pureza(index_buscado)
         return pureza_encontrada >= pureza_original
 
+    def _remover_normalizacao(self, instancia: pd.Series):
+        """
+        Remove a normalização da instância.
+
+        :param instancia: Instância a ser normalizada.
+        :type instancia: pd.Series
+        :return: Instância normalizada.
+        :rtype: pd.Series
+        :raise: RuntimeError
+        """
+        if self.normalizador_associado is not None:
+            return self.normalizador_associado.inverse_transform(instancia)
+        raise RuntimeError("Não há normalização associada ao método.")
+
     def __str__(self):
+        try:
+            instancia_original = self._remover_normalizacao(self.instancia_original)
+            instancia_modificada = self._remover_normalizacao(self.instancia_modificada)
+        except RuntimeError:
+            instancia_original = self.instancia_original
+            instancia_modificada = self.instancia_modificada
+
         with pd.option_context('display.max_rows', None, 'display.max_columns', None):
             return f"""
 Counterfactual:
-Instância original:\n{self.normalizador_associado.inverse_transform(self.instancia_original)}\n
-Instância modificada:\n{self.normalizador_associado.inverse_transform(self._instancia_modificada)}\n
+Instância original:\n{instancia_original}\n
+Instância modificada:\n{instancia_modificada}\n
 Classe desejada: {self.classe_desejada}
 Pureza original: {self.pureza_original}
 Pureza modificada: {self.pureza_modificada}
