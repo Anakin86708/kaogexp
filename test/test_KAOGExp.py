@@ -82,28 +82,6 @@ class KAOGExpTest(unittest.TestCase):
         explicacao = self.instance.explicar(input_, metodo, classe_desejada=1)
         self.assertIsInstance(explicacao, metodo)
 
-    def test_validade(self):
-        """Verifica se a porcentagem de valores encontrados está dentro do esperado"""
-        iris = Data.iris_dataset()
-        iris.drop_duplicates(inplace=True)
-        validacao = iris.sample(frac=0.3)
-        classe_buscada = 2
-        train = iris.drop(validacao.index)
-        kaog = KAOG(train)
-
-        results = []
-        for idx, item in validacao.iterrows():
-            instance = Counterfactual(kaog, item, classe_buscada)
-            try:
-                _ = instance.instancia_modificada
-                results.append(True)
-            except AttributeError:
-                results.append(False)
-
-        # Representa a porcentagem de acertos esperado
-        taxa_validacao = 0.9
-        porcentagem = sum(results) / len(results)
-        self.assertGreaterEqual(porcentagem, taxa_validacao)
 
 if __name__ == '__main__':
     unittest.main()

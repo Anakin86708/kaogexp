@@ -93,7 +93,7 @@ class Counterfactual(MethodAbstract):
         :rtype: np.ndarray
         """
         dist = self.distancias_e_vizinhos
-        return dist.k_vizinhos_mais_proximos_de(self.index_buscado)
+        return dist.k_vizinhos_mais_proximos_de(self.instancia_original)
 
     def _condicao_busca(self, index_buscado: int):
         """
