@@ -4,6 +4,7 @@ from unittest import expectedFailure
 import pandas as pd
 from kaog import KAOG
 
+from data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
@@ -82,6 +83,56 @@ class KAOGExpTest(unittest.TestCase):
         explicacao = self.instance.explicar(input_, metodo, classe_desejada=1)
         self.assertIsInstance(explicacao, metodo)
 
+    def test_explicar_dados_diferentes_iris(self):
+        """
+        Dada uma instância nunca vista (com dados categóricos já conhecidos), deve ser dada uma explicação válida.
+        """
+        classe_atual = 0
+        classe_desejada = 1
+        iris = Data.create_new_instance_iris()
+        data = iris.dataset(encoded=False)
+        input_ = data[data[NOME_COLUNA_Y] == classe_atual].sample(1).iloc[0]
+        metodo = Counterfactual
+        input_index = input_.name
+        train_data = data.drop(input_index)
+
+        modelo = RandomForestModel(iris.x().drop(input_index), iris.y().drop(input_index))
+        sampler = LatinSampler(KAOGExpTest.EPSILON)
+        instance = KAOGExp(DatasetFromMemory(train_data, pd.Index([])), modelo, sampler)
+
+        result = instance.explicar(input_, metodo, classe_desejada=classe_desejada,
+                                   normalizador_associado=iris.normalizador,
+                                   tratador_associado=iris.tratador)
+        pd.testing.assert_series_equal(input_, result.instancia_original)
+        self.assertIsInstance(result, metodo)
+        self.assertEqual(classe_desejada, result.classe_desejada)
+        self.assertEqual(classe_desejada, modelo.predict(result.instancia_modificada.drop(NOME_COLUNA_Y)))
+
+    def test_explicat_dados_diferentes_adult(self):
+        """
+        Dada uma instância nunca vista (com dados categóricos já conhecidos), deve ser dada uma explicação válida.
+        """
+        classe_atual = 0
+        classe_desejada = 1
+        adult = Data.create_new_instance_adult()
+        data = adult.dataset(encoded=False)
+        input_ = data[data[NOME_COLUNA_Y] == classe_atual].sample(1).iloc[0]
+        metodo = Counterfactual
+        input_index = input_.name
+        train_data = data.drop(input_index)
+
+        modelo = RandomForestModel(adult.x(encoded=True).drop(input_index), adult.y().drop(input_index))
+        sampler = LatinSampler(KAOGExpTest.EPSILON)
+        instance = KAOGExp(DatasetFromMemory(train_data, adult._nomes_colunas_categoricas), modelo, sampler)
+
+        result = instance.explicar(input_, metodo, classe_desejada=classe_desejada,
+                                   normalizador_associado=adult.normalizador,
+                                   tratador_associado=adult.tratador)
+        pd.testing.assert_series_equal(input_, result.instancia_original)
+        self.assertIsInstance(result, metodo)
+        self.assertEqual(classe_desejada, result.classe_desejada)
+        modificada = adult.tratador.encode(result.instancia_modificada.drop(NOME_COLUNA_Y))
+        self.assertEqual(classe_desejada, modelo.predict(modificada))
 
 if __name__ == '__main__':
     unittest.main()
