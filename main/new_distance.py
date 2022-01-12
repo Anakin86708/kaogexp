@@ -1,41 +1,43 @@
+from typing import Union
+
 import numpy as np
 import pandas as pd
+from scipy.spatial.distance import pdist
 
 
 class NewDistance:
 
     def __init__(self, data: pd.DataFrame, cat_cols: pd.Index):
         """
-        :param data: Utilizado para determinar o range dos dados.
+        :param data: Utilizado para determinar o dummy dos dados.
         :type data: pd.DataFrame
         :param cat_cols: Colunas de `data` que serão tratadas como categóricas.
         :type cat_cols: pd.Index
         """
         self._data = data.copy()
         self._cat_cols = cat_cols.copy()
-        self._range = self._get_range()
         self._dummy_cols = pd.get_dummies(data, columns=cat_cols).columns
 
     @property
     def data(self):
         return self._data.copy()
 
-    @property
-    def range(self):
-        return self._range.copy()
 
     @property
     def cat_cols(self):
         return self._cat_cols.copy()
 
-    def calculate(self, x, y):
+    def calculate(self, x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray]) -> float:
         """
         Calculate the normalized eucliian distance between two series, considering the categorical data distance as
         1 if diferent or 0 if equal.
 
-        :param x: Series with the first data.
-        :param y: Series with the second data.
+        :param x: Series with the first data. **DATA MUST BE NORMALIZED**
+        :type x: Union[pd.Series, np.ndarray]
+        :param y: Series with the second data. **DATA MUST BE NORMALIZED**
+        :type y: Union[pd.Series, np.ndarray]
         :return: The normalized eucliian distance between the two series.
+        :rtype: float
         """
         if isinstance(x, np.ndarray):
             x = pd.Series(x, index=self.data.columns)
@@ -46,18 +48,7 @@ class NewDistance:
             x_, y_ = self._apply_dummy(pd.Series(x)), self._apply_dummy(pd.Series(y))
         else:
             x_, y_ = x, y
-        return np.sqrt(np.sum(np.square(np.divide((x_ - y_), self._range))))
-
-    def _get_range(self):
-        """Get the range of the data.
-        Max and min values are calculated for each column.
-        Categorical colmuns are ignored and get the value 1.
-
-        :return: Series with the range
-        :rtype: pd.Series
-        """
-        return pd.get_dummies(self.data, columns=self.cat_cols).apply(
-            lambda x: 1 if x.name in self.cat_cols else abs(x.max() - x.min()))
+        return pdist(np.array([x_, y_]), metric='euclidean')[0]
 
     def _apply_dummy(self, x: pd.Series) -> pd.Series:
         """Apply the dummy function to the series.
