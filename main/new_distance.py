@@ -2,7 +2,6 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from scipy.spatial.distance import pdist
 
 
 class NewDistance:
@@ -48,7 +47,11 @@ class NewDistance:
             x_, y_ = self._apply_dummy(pd.Series(x)), self._apply_dummy(pd.Series(y))
         else:
             x_, y_ = x, y
-        return pdist(np.array([x_, y_]), metric='euclidean')[0]
+
+        if np.array([x_, y_]).shape[0] != 2:
+            raise RuntimeError()
+
+        return np.linalg.norm(x_ - y_)
 
     def _apply_dummy(self, x: pd.Series) -> pd.Series:
         """Apply the dummy function to the series.

@@ -19,7 +19,8 @@ class NewDistanceTest(unittest.TestCase):
 
         # ADULT
         # Result from distance.euclidean com x e y normalizados e encoded
-        self.distance_adult = 0.3148014420319046
+        # tem 4 categoricas diferrentes
+        self.distance_adult = 2.02462
         self.adult_expected_x = np.array([0.30136986301369856, 'State-gov', 0.04430189755640374, 'Bachelors',
                                           0.8, 'Never-married', 'Adm-clerical', 'Not-in-family', 'White',
                                           'Male', 0.021740217402174022, 0.0, 0.39795918367346933,
