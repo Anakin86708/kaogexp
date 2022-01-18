@@ -51,7 +51,7 @@ class DatasetAbstract(ABC):
         # Tratar valores faltantes se necessário
         self._tratador = None
         if tratar_na:
-            self._tratador: TreatmentAbstract = TreatmentFactory.create(tratador, dataset=self._dataset)
+            self._tratador: TreatmentAbstract = self._get_tratador(tratador)
             self._dataset = self.tratador.tratar_na(data, self._valores_na)
             self.tratador.atualizar_colunas(self._dataset)
 
@@ -60,9 +60,20 @@ class DatasetAbstract(ABC):
 
         x = self.x(False, False)
         nomes_cols_num = x.drop(self._nomes_colunas_categoricas, axis=1).columns
-        self._normalizador: NormalizerAbstract = NormalizerFactory.create(normalizador,
-                                                                          x=x,
-                                                                          nomes_colunas_normalizar=nomes_cols_num)
+        self._normalizador: NormalizerAbstract = self._get_nomalizer(nomes_cols_num, normalizador, x)
+
+    def _get_tratador(self, tratador):
+        if isinstance(tratador, str):
+            return TreatmentFactory.create(tratador, dataset=self._dataset)
+        return tratador
+
+    @staticmethod
+    def _get_nomalizer(nomes_cols_num, normalizador, x):
+        if isinstance(normalizador, str):
+            return NormalizerFactory.create(normalizador,
+                                            x=x,
+                                            nomes_colunas_normalizar=nomes_cols_num)
+        return normalizador
 
     def dataset(self, normalizado: bool = True, encoded: bool = False) -> pd.DataFrame:
         """
