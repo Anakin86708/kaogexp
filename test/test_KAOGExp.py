@@ -96,7 +96,7 @@ class KAOGExpTest(unittest.TestCase):
         input_index = input_.name
         train_data = data.drop(input_index)
 
-        modelo = RandomForestModel(iris.x().drop(input_index), iris.y().drop(input_index))
+        modelo = RandomForestModel(iris.x().drop(input_index), iris.y().drop(input_index), iris.tratador)
         sampler = LatinSampler(KAOGExpTest.EPSILON)
         instance = KAOGExp(DatasetFromMemory(train_data, pd.Index([])), modelo, sampler)
 
@@ -121,7 +121,7 @@ class KAOGExpTest(unittest.TestCase):
         input_index = input_.name
         train_data = data.drop(input_index)
 
-        modelo = RandomForestModel(adult.x(encoded=True).drop(input_index), adult.y().drop(input_index))
+        modelo = RandomForestModel(adult.x(encoded=True).drop(input_index), adult.y().drop(input_index), adult.tratador)
         sampler = LatinSampler(KAOGExpTest.EPSILON)
         instance = KAOGExp(DatasetFromMemory(train_data, adult._nomes_colunas_categoricas), modelo, sampler)
 

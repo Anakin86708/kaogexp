@@ -35,10 +35,7 @@ seed = 42
 sampler = LatinSampler(epsilon=epsilon, seed=seed, limite_epsilon=limite_epsilon)
 
 # %%
-# dist = NewDistance(test_data.x(), test_data.nomes_colunas_categoricas)
 metodo = Counterfactual
-# metodo.set_metrica_distancia(dist.calculate)
-# %%
 explicador = KAOGExp(train_data, model, sampler)
 classe_desejada = 1
 tratador_associado = train_data.tratador

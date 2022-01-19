@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pandas as pd
 from kaog import KAOG
@@ -153,6 +155,7 @@ class Counterfactual(MethodAbstract):
             instancia_original = self._remover_normalizacao(self.instancia_original)
             instancia_modificada = self._remover_normalizacao(self.instancia_modificada)
         except RuntimeError:
+            logging.error("Não foi possível reverter a normalização")
             instancia_original = self.instancia_original
             instancia_modificada = self.instancia_modificada
 

@@ -38,7 +38,7 @@ class RandomForestModelTest(unittest.TestCase):
         target_col = 'target'
         x = data.drop(target_col, axis=1)
         y = data[target_col]
-        model = RandomForestModel(x, y)
+        model = RandomForestModel(x, y, None)
         return model, x
 
 
