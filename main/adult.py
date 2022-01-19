@@ -9,7 +9,6 @@ from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
 from kaogexp.model.RandomForestModel import RandomForestModel
-from main.new_distance import NewDistance
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -27,7 +26,7 @@ test_data = DatasetFromMemory(test_data, index)
 # %%
 x = train_data.x(normalizado=True, encoded=True)
 y = train_data.y()
-model = RandomForestModel(x, y)
+model = RandomForestModel(x, y, train_data.tratador)
 
 # %%
 epsilon = 0.05
@@ -36,9 +35,9 @@ seed = 42
 sampler = LatinSampler(epsilon=epsilon, seed=seed, limite_epsilon=limite_epsilon)
 
 # %%
-dist = NewDistance(test_data.x(), test_data.nomes_colunas_categoricas)
+# dist = NewDistance(test_data.x(), test_data.nomes_colunas_categoricas)
 metodo = Counterfactual
-metodo.set_metrica_distancia(dist.calculate)
+# metodo.set_metrica_distancia(dist.calculate)
 # %%
 explicador = KAOGExp(train_data, model, sampler)
 classe_desejada = 1

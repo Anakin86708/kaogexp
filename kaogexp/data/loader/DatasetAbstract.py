@@ -50,10 +50,13 @@ class DatasetAbstract(ABC):
 
         # Tratar valores faltantes se necessário
         self._tratador = None
-        if tratar_na:
-            self._tratador: TreatmentAbstract = self._get_tratador(tratador)
+        if tratar_na and isinstance(tratador, str):
+            self._tratador: TreatmentAbstract = TreatmentFactory.create(tratador, dataset=self._dataset)
             self._dataset = self.tratador.tratar_na(data, self._valores_na)
             self.tratador.atualizar_colunas(self._dataset)
+        elif tratar_na and isinstance(tratador, TreatmentAbstract):
+            self._tratador = tratador
+            self._dataset = self.tratador.tratar_na(data, self._valores_na)
 
         if self._dataset.isna().any().any():
             raise Exception("Não é possível continuar com valores faltantes sem tratamento")

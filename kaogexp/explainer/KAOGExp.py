@@ -89,7 +89,7 @@ class KAOGExp:
                     self._continuar_amostragem()
 
         except ValueError as e:
-            logging.info(f'Não foi possível encontrar uma amostra válida.\n{e}\n\n')
+            logging.error(f'Não foi possível encontrar uma amostra válida.\n{e}\n\n')
             return None
 
     def _obter_amostra_valida(self, classe_desejada: int, instancia: pd.Series):
