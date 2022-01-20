@@ -1,3 +1,4 @@
+import logging
 from typing import Union
 
 import numpy as np
@@ -10,6 +11,7 @@ from kaogexp.model.ModelAbstract import ModelAbstract
 
 
 class RandomForestModel(ModelAbstract):
+    __logger = logging.getLogger(__name__)
 
     def __init__(self, x: pd.DataFrame, y: pd.Series, tratador: TreatmentAbstract):
         model = RandomForestClassifier()
@@ -32,10 +34,26 @@ class RandomForestModel(ModelAbstract):
 
     def predict(self, x: Union[pd.Series, pd.DataFrame]) -> Union[int, np.ndarray]:
         if isinstance(x, pd.Series):
-            predict = self.raw_model.predict(x.values.reshape(1, -1))[0]
+            predict = self._predict_series(x)
         else:
-            if x.shape[1] == self.raw_model.n_features_in_:
-                predict = self.raw_model.predict(x)
-            else:
-                predict = self.raw_model.predict(self.encode(x))
+            predict = self._predict_dataframe(x)
+        return predict
+
+    def _predict_dataframe(self, x: pd.DataFrame):
+        if x.shape[1] == self.raw_model.n_features_in_:
+            self.__logger.debug('Data already encoded')
+            predict = self.raw_model.predict(x)
+        else:
+            self.__logger.debug('Encoding data for predict')
+            predict = self.raw_model.predict(self.encode(x))
+        return predict
+
+    def _predict_series(self, x: pd.Series):
+        x_values_reshape = x.values.reshape(1, -1)
+        if x.shape[0] == self.raw_model.n_features_in_:
+            self.__logger.debug('Series predict already encoded')
+            predict = self.raw_model.predict(x_values_reshape)[0]
+        else:
+            self.__logger.debug('Encoding series for predict')
+            predict = self.raw_model.predict(self.tratador.encode(x_values_reshape))[0]
         return predict

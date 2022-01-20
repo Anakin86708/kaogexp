@@ -42,11 +42,11 @@ tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
 print('Realizando explicacao...')
-explicacao = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, classe_desejada=classe_desejada,
-                                 tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
+explicacoes = explicador.explicar(test_data.dataset().sample(1), metodo=metodo, classe_desejada=classe_desejada,
+                                  tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
 # %%
-for item in explicacao:
+for item in explicacoes:
     try:
         print(item)
     except AttributeError:

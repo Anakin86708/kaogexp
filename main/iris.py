@@ -42,11 +42,11 @@ tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
 print('Realizando explicacao...')
-explicacao = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, classe_desejada=classe_desejada,
-                                 tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
+explicacoes = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, classe_desejada=classe_desejada,
+                                  tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
 # %%
-for item in explicacao:
+for item in explicacoes:
     try:
         print(item)
     except AttributeError:
@@ -60,11 +60,11 @@ cers = CERScore(dist.calculate)
 validades = []
 dispersao = []
 proximidades = []
-for item in explicacao:
+for item in explicacoes:
     validades.append(Validity.calcular(item))
     dispersao.append(Dispersao.calcular(item))
     proximidades.append(prox.calcular(item))
-cerscore = cers.calcular(explicacao, proximidades)
+cerscore = cers.calcular(explicacoes, proximidades)
 
 print('Validade:', validades)
 print('Proporção de validade: %.3f' % (validades.count(True) / len(validades)))
