@@ -42,7 +42,7 @@ tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
 print('Realizando explicacao...')
-explicacoes = explicador.explicar(test_data.dataset().sample(5), metodo=metodo, classe_desejada=classe_desejada,
+explicacoes = explicador.explicar(test_data.dataset().sample(1), metodo=metodo, classe_desejada=classe_desejada,
                                   tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
 # %%

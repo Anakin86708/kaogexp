@@ -187,5 +187,12 @@ class KAOGExp:
 
     def _criar_kaog(self, amostra_completa: pd.DataFrame) -> KAOG:
         colunas_categoricas = self.dataset.nomes_colunas_categoricas
-        return KAOGAdaptado(DatasetFromMemory(amostra_completa, self.dataset.nomes_colunas_categoricas,
-                                              tratador=self.dataset.tratador, normalizador=self.dataset.normalizador))
+        normalizador = self.dataset.normalizador
+        return KAOGAdaptado(
+            DatasetFromMemory(
+                normalizador.inverse_transform(amostra_completa),
+                self.dataset.nomes_colunas_categoricas,
+                tratador=self.dataset.tratador,
+                normalizador=normalizador
+            )
+        )
