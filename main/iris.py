@@ -73,7 +73,9 @@ print('Validade:', validades)
 print('Proporção de validade: %.3f' % (validades.count(True) / len(validades)))
 print('Dispersão:', dispersao)
 fig = Dispersao.plot(dispersao)
-fig.show()
 print('Proximidade:', proximidades)
 print('Média:\n', pd.Series(proximidades).describe())
 print('CERScore:', cerscore)
+
+# %%
+fig.show()

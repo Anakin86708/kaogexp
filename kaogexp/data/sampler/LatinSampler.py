@@ -41,6 +41,16 @@ class LatinSampler(SamplerAbstract):
     def epsilon(self) -> float:
         return round(self._epsilon, 6)
 
+    @property
+    def fixed_cols(self) -> pd.Index:
+        if hasattr(self, '_fixed_cols') and self._fixed_cols is not None:
+            return self._fixed_cols.copy()
+        return pd.Index([])
+
+    @fixed_cols.setter
+    def fixed_cols(self, fixed_cols: pd.Index):
+        self._fixed_cols = fixed_cols.copy() if fixed_cols is not None else None
+
     def realizar_amostragem(self, interest_point: pd.Series, num_samples: int) -> pd.DataFrame:
         """
         Realizes a Latin Hypercube Sampling around 'interest_point' with 'num_samples' samples.
@@ -104,6 +114,7 @@ class LatinSampler(SamplerAbstract):
         sample = map(lambda x: min_ + x * (max_ - min_), latin_sample.T)
         # Reinserir os valores que não puderam ser alterados
         data_frame = self._reinsert_categorical_data(interest_point, sample)
+        data_frame = self._reinsert_fixed_cols(interest_point, data_frame)
         self._reindex_data(data_frame, interest_point, num_samples)
         return data_frame
 
@@ -146,7 +157,8 @@ class LatinSampler(SamplerAbstract):
         :return: Array with the values that can change being True.
         """
         non_numeric_cols = self._get_non_numeric_indexes(interest_point)
-        values_to_change = np.array([x not in non_numeric_cols for x in interest_point.index])
+        values_to_change = np.array(
+            [x not in non_numeric_cols and x not in self.fixed_cols for x in interest_point.index])
         return values_to_change
 
     @staticmethod
@@ -171,3 +183,7 @@ class LatinSampler(SamplerAbstract):
             return input_.str.replace(r'[0-9]+', '', regex=True).dropna().index
         except AttributeError:
             return pd.Index([])
+
+    def _reinsert_fixed_cols(self, interest_point: pd.Series, data_frame: pd.DataFrame):
+        data_frame[self.fixed_cols] = interest_point[self.fixed_cols]
+        return data_frame

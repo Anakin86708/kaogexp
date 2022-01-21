@@ -134,5 +134,29 @@ class KAOGExpTest(unittest.TestCase):
         modificada = adult.tratador.encode(result.instancia_modificada.drop(NOME_COLUNA_Y))
         self.assertEqual(classe_desejada, modelo.predict(modificada))
 
+    def test_fixed_cols(self):
+        adult = Data.create_new_instance_adult()
+        data = adult.dataset(encoded=False)
+        input_ = data[data[NOME_COLUNA_Y] == 0].sample(1).iloc[0]
+        metodo = Counterfactual
+        input_index = input_.name
+        train_data = data.drop(input_index)
+        fixed_cols = pd.Index(['age', 'sex', 'hours-per-week'])
+        modelo = RandomForestModel(adult.x(encoded=True).drop(input_index), adult.y().drop(input_index), adult.tratador)
+        sampler = LatinSampler(KAOGExpTest.EPSILON)
+        instance = KAOGExp(DatasetFromMemory(train_data, adult._nomes_colunas_categoricas), modelo, sampler,
+                           fixed_cols=fixed_cols)
+
+        result = instance.explicar(input_, metodo, classe_desejada=1,
+                                   normalizador_associado=adult.normalizador,
+                                   tratador_associado=adult.tratador)
+
+        print("original:\n", result.instancia_original)
+        print("\nmodificada:\n", result.instancia_modificada)
+
+        pd.testing.assert_index_equal(fixed_cols, instance.fixed_cols)
+        pd.testing.assert_series_equal(input_, result.instancia_original)
+        pd.testing.assert_series_equal(input_[fixed_cols], result.instancia_modificada[fixed_cols], check_names=False)
+
 if __name__ == '__main__':
     unittest.main()

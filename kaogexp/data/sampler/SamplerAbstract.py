@@ -21,3 +21,13 @@ class SamplerAbstract(ABC):
     @abstractmethod
     def reset_epsilon(self) -> None:
         raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def fixed_cols(self) -> pd.Index:
+        raise NotImplementedError
+
+    @fixed_cols.setter
+    @abstractmethod
+    def fixed_cols(self, fixed_cols: pd.Index) -> None:
+        raise NotImplementedError

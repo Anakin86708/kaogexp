@@ -21,11 +21,22 @@ class KAOGExp:
     NUM_SAMPLES = 100
     LIMITE_EPSILON = 1
 
-    def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler: SamplerAbstract):
+    def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler: SamplerAbstract,
+                 fixed_cols: Optional[pd.Index] = None):
+        """
+
+        :param dataset: Utilizado para obter informações sobre o dataset, como o tratador e comunas categóricas.
+        :param modelo: Classificador utilizado sobre o dataset.
+        :param sampler: Utilizado para obter amostras ao redor de uma instância sendo explicada.
+        :param fixed_cols: Colunas fixas do dataset que não são alteradas durante a explicação.
+        """
         self.dataset = dataset
         self.modelo = modelo
         self.sampler = sampler
+        self.fixed_cols = fixed_cols.copy() if fixed_cols is not None else None
         self._busca_invalida = False
+
+        self.sampler.fixed_cols = self.fixed_cols
 
     def explicar(self,
                  instancia: Union[pd.Series, pd.DataFrame],
