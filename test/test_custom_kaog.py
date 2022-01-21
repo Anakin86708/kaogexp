@@ -13,7 +13,7 @@ class TestDistancias_(TestCase):
     def setUp(self) -> None:
         self.adult = Data.create_new_instance_adult(5)
 
-    @mock.patch('explainer.kaog.custom_kaog.Distancias_._calcular_distancias_e_vizinhos')
+    @mock.patch('explainer.kaog.custom_kaog.NovaDistancia._calcular_distancias_e_vizinhos')
     def test__tratar_x(self, mock_vizinhos):
         mock_vizinhos.return_value = ([], [])
 

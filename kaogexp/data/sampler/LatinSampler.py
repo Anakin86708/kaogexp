@@ -99,12 +99,28 @@ class LatinSampler(SamplerAbstract):
         values_to_change = self._get_values_can_change(interest_point)
         min_ = (interest_point_np - self.epsilon) * values_to_change
         max_ = (interest_point_np + self.epsilon) * values_to_change
+        min_, max_ = self._restrain_limits(min_, max_)
         # Realiza a transformação para colocar `latin_sample` ao redor de `interest_point_np`
         sample = map(lambda x: min_ + x * (max_ - min_), latin_sample.T)
         # Reinserir os valores que não puderam ser alterados
         data_frame = self._reinsert_categorical_data(interest_point, sample)
         self._reindex_data(data_frame, interest_point, num_samples)
         return data_frame
+
+    @staticmethod
+    def _restrain_limits(min_: np.ndarray, max_: np.ndarray):
+        """
+        Keep limits inside [0, 1].
+
+        :param min_: Inferior limit.
+        :type min_: np.ndarray
+        :param max_: Superior limit.
+        :type max_: np.ndarray
+        :return:
+        """
+        min_ = np.array(list(map(lambda x: 0. if x < 0 else x, min_)))
+        max_ = np.array(list(map(lambda x: 1. if x > 1 else x, max_)))
+        return min_, max_
 
     def _reindex_data(self, data_frame, interest_point, num_samples):
         """Colocar valores de index a partir do index do ponto de interesse"""
