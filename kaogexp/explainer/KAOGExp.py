@@ -7,7 +7,7 @@ import pandas as pd
 from kaog import KAOG
 
 from data.loader.DatasetFromMemory import DatasetFromMemory
-from explainer.kaog.custom_kaog import KAOG_
+from explainer.kaog.custom_kaog import KAOGAdaptado
 from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
@@ -187,5 +187,5 @@ class KAOGExp:
 
     def _criar_kaog(self, amostra_completa: pd.DataFrame) -> KAOG:
         colunas_categoricas = self.dataset.nomes_colunas_categoricas
-        return KAOG_(DatasetFromMemory(amostra_completa, self.dataset.nomes_colunas_categoricas,
-                                       tratador=self.dataset.tratador, normalizador=self.dataset.normalizador))
+        return KAOGAdaptado(DatasetFromMemory(amostra_completa, self.dataset.nomes_colunas_categoricas,
+                                              tratador=self.dataset.tratador, normalizador=self.dataset.normalizador))

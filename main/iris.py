@@ -13,6 +13,7 @@ from kaogexp.metrics.dispersao import Dispersao
 from kaogexp.metrics.proximity import Proximity
 from kaogexp.metrics.validity import Validity
 from kaogexp.model.RandomForestModel import RandomForestModel
+from main.new_distance import NewDistance
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -54,6 +55,8 @@ for item in explicacoes:
 
 # %%
 # Métricas
+logging.basicConfig(level=logging.INFO)
+dist = NewDistance(test_data.dataset(), test_data.nomes_colunas_categoricas)
 logging.basicConfig(level=None)
 prox = Proximity(dist.calculate)
 cers = CERScore(dist.calculate)

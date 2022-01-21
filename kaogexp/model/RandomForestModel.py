@@ -49,11 +49,11 @@ class RandomForestModel(ModelAbstract):
         return predict
 
     def _predict_series(self, x: pd.Series):
-        x_values_reshape = x.values.reshape(1, -1)
         if x.shape[0] == self.raw_model.n_features_in_:
             self.__logger.debug('Series predict already encoded')
+            x_values_reshape = x.values.reshape(1, -1)
             predict = self.raw_model.predict(x_values_reshape)[0]
         else:
             self.__logger.debug('Encoding series for predict')
-            predict = self.raw_model.predict(self.tratador.encode(x_values_reshape))[0]
+            predict = self.raw_model.predict(self.tratador.encode(x).values.reshape(1, -1))[0]
         return predict

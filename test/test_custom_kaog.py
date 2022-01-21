@@ -4,7 +4,7 @@ from unittest import TestCase, mock
 import pandas as pd
 
 from data.loader import NOME_COLUNA_Y
-from explainer.kaog.custom_kaog import Distancias_
+from explainer.kaog.custom_kaog import NovaDistancia
 from util import Data
 
 
@@ -23,7 +23,7 @@ class TestDistancias_(TestCase):
         colunas_encoded = tratador.nomes_colunas_categoricas_encoded
         data = adult.x(True, False)
 
-        instance = Distancias_(adult)
+        instance = NovaDistancia(adult)
         result: pd.DataFrame = instance._tratar_x(data)
 
         self.assertTrue((result.columns == colunas_encoded_drop).all())

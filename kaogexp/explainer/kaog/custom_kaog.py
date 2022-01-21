@@ -5,12 +5,13 @@ import numpy as np
 import pandas as pd
 from kaog import KAOG
 from kaog.distancias import Distancias
+from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
 
 from data.loader.DatasetAbstract import DatasetAbstract
 
 
-class KAOG_(KAOG):
+class KAOGAdaptado(KAOG):
 
     def __init__(self, dataset: DatasetAbstract):
         """
@@ -26,10 +27,15 @@ class KAOG_(KAOG):
         super().__init__(data, cat_cols)
 
     def _calcular_distancias_e_vizinhos(self):
-        self._dist = Distancias_(self.dataset)
+        self._dist = NovaDistancia(self.dataset)
+
+    def _get_tsne(self):
+        tsne = TSNE(init='pca', learning_rate='auto', n_jobs=-1)
+        tsne_cords = pd.DataFrame(tsne.fit_transform(self.dataset.x(factorized=True)), index=self.x.index)
+        return tsne_cords
 
 
-class Distancias_(Distancias):
+class NovaDistancia(Distancias):
 
     def __init__(self, dataset: DatasetAbstract):
         """
