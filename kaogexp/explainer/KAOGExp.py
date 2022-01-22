@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 from kaog import KAOG
 
+from data.loader.DatasetFromMemory import DatasetFromMemory
+from explainer.kaog.custom_kaog import KAOGAdaptado
 from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
@@ -19,11 +21,22 @@ class KAOGExp:
     NUM_SAMPLES = 100
     LIMITE_EPSILON = 1
 
-    def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler: SamplerAbstract):
+    def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler: SamplerAbstract,
+                 fixed_cols: Optional[pd.Index] = None):
+        """
+
+        :param dataset: Utilizado para obter informações sobre o dataset, como o tratador e comunas categóricas.
+        :param modelo: Classificador utilizado sobre o dataset.
+        :param sampler: Utilizado para obter amostras ao redor de uma instância sendo explicada.
+        :param fixed_cols: Colunas fixas do dataset que não são alteradas durante a explicação.
+        """
         self.dataset = dataset
         self.modelo = modelo
         self.sampler = sampler
+        self.fixed_cols = fixed_cols.copy() if fixed_cols is not None else None
         self._busca_invalida = False
+
+        self.sampler.fixed_cols = self.fixed_cols
 
     def explicar(self,
                  instancia: Union[pd.Series, pd.DataFrame],
@@ -87,8 +100,8 @@ class KAOGExp:
                     logging.info(f'{e}\nContinuando amostragem...')
                     self._continuar_amostragem()
 
-        except ValueError:
-            logging.info('Não foi possível encontrar uma amostra válida.\n\n')
+        except ValueError as e:
+            logging.error(f'Não foi possível encontrar uma amostra válida.\n{e}\n\n')
             return None
 
     def _obter_amostra_valida(self, classe_desejada: int, instancia: pd.Series):
@@ -185,7 +198,13 @@ class KAOGExp:
         return pd.Series(predict, index=amostragem.index, name=NOME_COLUNA_Y)
 
     def _criar_kaog(self, amostra_completa: pd.DataFrame) -> KAOG:
-        categorical_index = list(filter(lambda x: type(x) is int,
-                                        [idx if col in self.dataset.nomes_colunas_categoricas else None for idx, col in
-                                         enumerate(amostra_completa.columns)]))
-        return KAOG(amostra_completa)
+        colunas_categoricas = self.dataset.nomes_colunas_categoricas
+        normalizador = self.dataset.normalizador
+        return KAOGAdaptado(
+            DatasetFromMemory(
+                normalizador.inverse_transform(amostra_completa),
+                self.dataset.nomes_colunas_categoricas,
+                tratador=self.dataset.tratador,
+                normalizador=normalizador
+            )
+        )

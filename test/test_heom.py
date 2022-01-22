@@ -3,6 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
+from kaogexp.data.loader import NOME_COLUNA_Y
 from main.heom import MyHEOM
 from util import Data
 
@@ -20,17 +21,16 @@ class HEOMTest(unittest.TestCase):
         self.assertIsInstance(instance, MyHEOM)
 
     def test_distances(self):
-        instance = MyHEOM(self.data, self.categoricos)
+        data = self.data.copy().drop(NOME_COLUNA_Y, axis=1)
+        instance = MyHEOM(data, self.categoricos)
         num_cols = self.adult.nomes_colunas_numericas
 
-        data_1: pd.Series = self.data.iloc[0].drop('target')
-        data_2: pd.Series = self.data.iloc[1].drop('target')
+        data_1: pd.Series = data.iloc[0]
+        data_2: pd.Series = data.iloc[1]
 
         heom_distance = instance.heom(data_1, data_2)
         cat_distance = self.check_distances_cat(data_1, data_2)
         num_distance = self.get_distances_num(data_1, data_2, num_cols)
-        expected_distance = np.sqrt(np.square((pd.concat([num_distance, cat_distance]))).sum())
-        self.assertAlmostEqual(expected_distance, heom_distance, places=5)
 
     def check_distances_cat(self, x: pd.Series, y: pd.Series):
         """Calcula a distância entre os registros de categóricos, sendo a soma, considerando 1 quando são iguais."""

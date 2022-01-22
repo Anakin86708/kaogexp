@@ -108,6 +108,47 @@ class LatinSamplerTest(unittest.TestCase):
         sample_ = sample.sample(1).iloc[0]
         pd.testing.assert_series_equal(input_[colunas_catetgorias], sample_[colunas_catetgorias], check_names=False)
 
+    def test_restrain_limits(self):
+        # Assert in case inside limits
+        min_ = np.array([.0] * 2)
+        max_ = np.array([.4] * 2)
+
+        result_min, result_max = LatinSampler._restrain_limits(min_, max_)
+
+        print('result_min', result_min)
+        print('result_max', result_max)
+
+        np.testing.assert_array_equal(min_, result_min)
+        np.testing.assert_array_equal(max_, result_max)
+
+    def test_restrain_limits_min(self):
+        # Assert in case minimum limit exceds
+        min_ = np.array([-.1] * 2)
+        max_ = np.array([.5] * 2)
+        expected_min = np.array([.0] * 2)
+
+        result_min, result_max = LatinSampler._restrain_limits(min_, max_)
+
+        print('result_min', result_min)
+        print('result_max', result_max)
+
+        np.testing.assert_array_equal(expected_min, result_min)
+        np.testing.assert_array_equal(max_, result_max)
+
+    def test_restrain_limits_max(self):
+        # Assert in case maximum limit exceds
+        min_ = np.array([.0] * 2)
+        max_ = np.array([1.5] * 2)
+        exected_max = np.array([1.0] * 2)
+
+        result_min, result_max = LatinSampler._restrain_limits(min_, max_)
+
+        print('result_min', result_min)
+        print('result_max', result_max)
+
+        np.testing.assert_array_equal(min_, result_min)
+        np.testing.assert_array_equal(exected_max, result_max)
+
     ################
     # Util methods #
     ################

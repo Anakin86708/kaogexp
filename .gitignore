@@ -238,3 +238,4 @@ dmypy.json
 cython_debug/
 
 /docs/kaogexp.asta.lock
+*.patch

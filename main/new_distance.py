@@ -1,3 +1,5 @@
+from typing import Union
+
 import numpy as np
 import pandas as pd
 
@@ -5,48 +7,51 @@ import pandas as pd
 class NewDistance:
 
     def __init__(self, data: pd.DataFrame, cat_cols: pd.Index):
+        """
+        :param data: Utilizado para determinar o dummy dos dados.
+        :type data: pd.DataFrame
+        :param cat_cols: Colunas de `data` que serão tratadas como categóricas.
+        :type cat_cols: pd.Index
+        """
         self._data = data.copy()
         self._cat_cols = cat_cols.copy()
-        self._range = self._get_range()
+        self._dummy_cols = pd.get_dummies(data, columns=cat_cols).columns
 
     @property
     def data(self):
         return self._data.copy()
 
-    @property
-    def range(self):
-        return self._range.copy()
 
     @property
     def cat_cols(self):
         return self._cat_cols.copy()
 
-    def calculate(self, x, y):
+    def calculate(self, x: Union[pd.Series, np.ndarray], y: Union[pd.Series, np.ndarray]) -> float:
         """
         Calculate the normalized eucliian distance between two series, considering the categorical data distance as
         1 if diferent or 0 if equal.
 
-        :param x: Series with the first data.
-        :param y: Series with the second data.
+        :param x: Series with the first data. **DATA MUST BE NORMALIZED**
+        :type x: Union[pd.Series, np.ndarray]
+        :param y: Series with the second data. **DATA MUST BE NORMALIZED**
+        :type y: Union[pd.Series, np.ndarray]
         :return: The normalized eucliian distance between the two series.
+        :rtype: float
         """
+        if isinstance(x, np.ndarray):
+            x = pd.Series(x, index=self.data.columns)
+        if isinstance(y, np.ndarray):
+            y = pd.Series(y, index=self.data.columns)
+
         if not self.cat_cols.empty:
             x_, y_ = self._apply_dummy(pd.Series(x)), self._apply_dummy(pd.Series(y))
         else:
             x_, y_ = x, y
-        return np.sqrt(np.sum(np.square(np.divide((x_ - y_), self._range))))
 
-    def _get_range(self):
-        """Get the range of the data.
-        Max and min values are calculated for each column.
-        Categorical colmuns are ignored and get the value 1.
+        if np.array([x_, y_]).shape[0] != 2:
+            raise RuntimeError()
 
-        :return: Series with the range
-        :rtype: pd.Series
-        """
-        range_ = abs(self._data.max() - self._data.min())
-        range_[self._cat_cols] = 1
-        return range_
+        return np.linalg.norm(x_ - y_)
 
     def _apply_dummy(self, x: pd.Series) -> pd.Series:
         """Apply the dummy function to the series.
@@ -58,6 +63,9 @@ class NewDistance:
         :return: Series with one-hot encoding.
         :rtype: pd.Series
         """
-        dummies = pd.get_dummies(x, columns=self._cat_cols)
-        dummies[self._cat_cols] = dummies[self._cat_cols] * np.sqrt(.5)
-        return dummies
+        dummies = pd.get_dummies(pd.DataFrame([x]), columns=self.cat_cols)  # Apply dummy function
+        missing = self._dummy_cols.difference(dummies.columns)  # Verify if there are missing columns
+        dummies = dummies.assign(**{col: 0 for col in missing})  # Set missing columns to 0
+        new_dummies_cols = dummies.columns.difference(x.index)  # Get columns names as dummies
+        dummies[new_dummies_cols] = dummies[new_dummies_cols] * np.sqrt(.5)  # Replace categorical data by sqrt(0.5)
+        return dummies.iloc[0]
