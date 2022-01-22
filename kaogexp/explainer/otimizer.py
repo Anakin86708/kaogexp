@@ -1,9 +1,12 @@
+from itertools import combinations
 from typing import List
 
 import pandas as pd
 
+from explainer.methods.Counterfactual import Counterfactual
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 from kaogexp.model.ModelAbstract import ModelAbstract
+from metrics.dispersao import Dispersao
 
 
 class SparsityOptimization:
@@ -17,7 +20,7 @@ class SparsityOptimization:
         self.cat_cols = cat_cols.copy()
         self._instancia_original = None
 
-    def optimize(self, instancia: MethodAbstract):
+    def optimize(self, instancia: Counterfactual):
         """
         Otimiza a instância, tentando reverter as features para o original. A otimização é aceita, se a classe for
         mantida.
@@ -33,7 +36,7 @@ class SparsityOptimization:
 
         # Obter pemutacoes de features
 
-    def _permutar_features(self, instancia: pd.Series, changed: List, remaining: List):
+    def _permutar_features(self, instancia: Counterfactual):
         """
         Realiza a permutação de features, revertendo as features que tiveram alguma alteração para o valor original.
 
@@ -46,18 +49,23 @@ class SparsityOptimization:
         :return: Todas as possíveis permutações de features.
         :rtype: pd.DataFrame
         """
-        permutacoes = pd.DataFrame([instancia.copy()])
-        intalteradas = []
-        if len(remaining) == 0:
-            return permutacoes
+        metrica = Dispersao.calcular(instancia)
+        original = instancia.instancia_original
+        modificada = instancia.instancia_modificada
+        max_can_change = metrica - 1
+        for num_alterados in range(max_can_change, 0, -1):
+            idx_alterados = original.index[original != modificada]
+            poss_idx_alterar = list(map(pd.Index, combinations(idx_alterados, max_can_change)))
+            alterados = []
+            for item in poss_idx_alterar:
+                ins = modificada.copy()
+                ins[item] = original[item]
+                alterados.append(ins.copy())
 
-        for i, item in enumerate(remaining):
-            alterada = instancia.copy()
-            if alterada[item] != self._instancia_original[item]:
-                alterada[item] = self._instancia_original[item]
-                rem = list(filter(lambda x: x != item and x not in intalteradas, remaining))
-                permutacoes = permutacoes.append(self._permutar_features(alterada, changed + [item], rem),
-                                                 ignore_index=True)
-            else:
-                intalteradas.append(item)
-        return permutacoes.drop_duplicates()
+            # Classificar os alterados
+            # se encontrar algum que permanceça na classe desejada, parar
+            for item in alterados:
+                classe_otimizada = self.modelo.predict(item)
+                if classe_otimizada == instancia.classe_desejada:
+                    instancia._instancia_modificada = item
+                    return instancia
