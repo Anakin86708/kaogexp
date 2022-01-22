@@ -35,6 +35,13 @@ class SparsityOptimization:
         instancia_otimizada: pd.Series = instancia_modificada.copy()
 
         # Obter pemutacoes de features
+        for item in self._permutar_features(instancia):
+            # Classificar os alterados
+            # se encontrar algum que permanceça na classe desejada, parar
+            classe_otimizada = self.modelo.predict(item)
+            if classe_otimizada == instancia.classe_desejada:
+                instancia._instancia_modificada = item
+                return instancia
 
     def _permutar_features(self, instancia: Counterfactual):
         """
@@ -55,17 +62,8 @@ class SparsityOptimization:
         max_can_change = metrica - 1
         for num_alterados in range(max_can_change, 0, -1):
             idx_alterados = original.index[original != modificada]
-            poss_idx_alterar = list(map(pd.Index, combinations(idx_alterados, max_can_change)))
-            alterados = []
+            poss_idx_alterar = list(map(pd.Index, combinations(idx_alterados, num_alterados)))
             for item in poss_idx_alterar:
                 ins = modificada.copy()
                 ins[item] = original[item]
-                alterados.append(ins.copy())
-
-            # Classificar os alterados
-            # se encontrar algum que permanceça na classe desejada, parar
-            for item in alterados:
-                classe_otimizada = self.modelo.predict(item)
-                if classe_otimizada == instancia.classe_desejada:
-                    instancia._instancia_modificada = item
-                    return instancia
+                yield ins.copy()

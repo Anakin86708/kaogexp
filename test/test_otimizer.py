@@ -32,10 +32,13 @@ class TestSparsityOptimization(TestCase):
         mock_counterfactual = Mock()
         mock_counterfactual.instancia_original = original
         mock_counterfactual.instancia_modificada = modificada
-        mock_dispersao.return_value = 3
+        num_diff = 3
+        mock_dispersao.return_value = num_diff
 
         instancia = SparsityOptimization(None, pd.Index([]))
         instancia._instancia_original = original.copy()
-        resultado = instancia._permutar_features(mock_counterfactual)
+        resultado = pd.DataFrame(list(instancia._permutar_features(mock_counterfactual)))
 
         print(resultado)
+        self.assertEqual((2 ** num_diff) - 2, len(resultado))
+        self.assertTrue((resultado['a'] == 1).all())
