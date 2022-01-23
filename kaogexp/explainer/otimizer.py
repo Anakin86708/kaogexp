@@ -1,8 +1,10 @@
+from copy import deepcopy
 from itertools import combinations
 from typing import List
 
 import pandas as pd
 
+from data.loader import NOME_COLUNA_Y
 from explainer.methods.Counterfactual import Counterfactual
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 from kaogexp.model.ModelAbstract import ModelAbstract
@@ -30,6 +32,7 @@ class SparsityOptimization:
         :return: Instância otimizada, podendo ser a mesma que a entrada, se não houve mudança.
         :rtype: MethodAbstract
         """
+        instancia = deepcopy(instancia)
         self._instancia_original: pd.Series = instancia.instancia_original
         instancia_modificada: pd.Series = instancia.instancia_modificada
         instancia_otimizada: pd.Series = instancia_modificada.copy()
@@ -40,8 +43,10 @@ class SparsityOptimization:
             # se encontrar algum que permanceça na classe desejada, parar
             classe_otimizada = self.modelo.predict(item)
             if classe_otimizada == instancia.classe_desejada:
+                item[NOME_COLUNA_Y] = classe_otimizada
                 instancia._instancia_modificada = item
-                return instancia
+                break
+        return instancia
 
     def _permutar_features(self, instancia: Counterfactual):
         """
