@@ -7,13 +7,37 @@ from data.sampler.categorical_sampler import RandomCategoricalSampler
 
 class TestRandomCategoricalSampler(TestCase):
 
+    def setUp(self) -> None:
+        self.data = pd.DataFrame(
+            {
+                'a': [1, 2, 3, 5, 3],
+                'b': ['m', 'm', 'f', 'f', 'f'],
+                'c': [1, 3, 3, 2, 1],
+                'd': [.4, .2, .5, .2, 1]
+            }
+        )
+
     def test__definir_colunas_alteradas(self):
         cat_cols = pd.Index(['a', 'b', 'c'])
         fixed_cols = pd.Index(['b'])
         expected = pd.Index(['a', 'c'])
-        instance = RandomCategoricalSampler(pd.DataFrame(), cat_cols, fixed_cols)
+        instance = RandomCategoricalSampler(self.data, cat_cols, fixed_cols)
 
         result = instance._definir_colunas_alteradas()
 
         print(result)
         pd.testing.assert_index_equal(expected, result)
+
+    def test_obter_valores_cat_unicos(self):
+        cat_cols = pd.Index(['a', 'b', 'c'])
+        fixed_cols = pd.Index(['c', 'd'])
+        expected = {
+            'a': [1, 2, 3, 5],
+            'b': ['m', 'f']
+        }
+
+        instance = RandomCategoricalSampler(self.data, cat_cols, fixed_cols)
+        result = instance._obter_valores_cat_unicos()
+
+        print(result)
+        self.assertDictEqual(expected, result)

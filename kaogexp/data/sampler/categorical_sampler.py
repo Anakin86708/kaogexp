@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import pandas as pd
 
 
@@ -20,9 +22,15 @@ class RandomCategoricalSampler:
         self.fixed_cols = fixed_cols.copy()
 
         self.colunas_alteradas = self._definir_colunas_alteradas()
+        self.unique_cat_cols = self._obter_valores_cat_unicos()
 
     def realizar_amostragem(self, amostragem: pd.DataFrame) -> pd.DataFrame:
-        pass
+        """
+        Para cada linha da amostragem, alterar as colunas categóricas possíveis para outro dado categórico.
+
+        :param amostragem:
+        :return:
+        """
 
     def _definir_colunas_alteradas(self):
         """
@@ -33,3 +41,15 @@ class RandomCategoricalSampler:
         cat_cols = self.cat_cols.tolist()
         fix_cols = self.fixed_cols.tolist()
         return pd.Index(list(filter(lambda x: x not in fix_cols, cat_cols)))
+
+    def _obter_valores_cat_unicos(self) -> Dict[str, List]:
+        """
+        Obtêm os valores únicos de cada coluna categórica que pode ser alterada.
+
+        :return: Dados únicos da cada coluna categórica.
+        :rtype: Dict[str, List]
+        """
+        result = {}
+        for col in self.colunas_alteradas:
+            result[col] = self.data[col].unique().tolist()
+        return result
