@@ -1,3 +1,4 @@
+from random import choice
 from typing import Dict, List
 
 import pandas as pd
@@ -9,8 +10,8 @@ class RandomCategoricalSampler:
         """
         Utiliza os dados para adquirir as possibilidades de valores categóricos a serem atribuídos em cada coluna.
 
-        :param data: Conjunto de dados, que pode até mesmo incluir valores numéricos
-        (dos quais não serão utilizados aqui)
+        :param data: Conjunto de dados que inclui todas as possibilidades de valores categóricos,
+        que pode até mesmo incluir valores numéricos (dos quais não serão utilizados aqui).
         :type data: pd.DataFrame
         :param cat_cols: Colunas categóricas que podem ser alteradas pela amostragem.
         :type cat_cols: pd.Index
@@ -28,9 +29,14 @@ class RandomCategoricalSampler:
         """
         Para cada linha da amostragem, alterar as colunas categóricas possíveis para outro dado categórico.
 
-        :param amostragem:
-        :return:
+        :param amostragem: Dados onde serão alteradas as colunas categóricas
+        :type amostragem: pd.DataFrame
+        :return: Amostra, com dados categóricos alterados aleatóriamente.
+        :rtype: pd.DataFrame
         """
+        amostragem = amostragem.copy()
+        amostragem = amostragem.apply(self._aleatorizar_series, axis=1)
+        return amostragem
 
     def _definir_colunas_alteradas(self):
         """
@@ -53,3 +59,8 @@ class RandomCategoricalSampler:
         for col in self.colunas_alteradas:
             result[col] = self.data[col].unique().tolist()
         return result
+
+    def _aleatorizar_series(self, row: pd.Series):
+        for col, _ in row[self.colunas_alteradas].iteritems():
+            row[col] = choice(self.unique_cat_cols[col])
+        return row

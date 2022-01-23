@@ -1,3 +1,4 @@
+from random import choice
 from unittest import TestCase
 
 import pandas as pd
@@ -41,3 +42,26 @@ class TestRandomCategoricalSampler(TestCase):
 
         print(result)
         self.assertDictEqual(expected, result)
+
+    def test_realizar_amostragem(self):
+        cat_cols = pd.Index(['a', 'b', 'c'])
+        fixed_cols = pd.Index(['c', 'd'])
+        num_amostras = 10
+        amostra = pd.DataFrame(
+            {
+                'a': [choice(range(1, 6))] * num_amostras,
+                'b': [choice(['f', 'm'])] * num_amostras,
+                'c': [choice(range(1, 4))] * num_amostras,
+                'd': [0] * num_amostras
+            }
+        )
+        print('Original')
+        print(amostra)
+        instance = RandomCategoricalSampler(self.data, cat_cols, fixed_cols)
+
+        result = instance.realizar_amostragem(amostra)
+
+        print('Resultado')
+        print(result)
+        self.assertFalse(result.equals(amostra))
+        pd.testing.assert_frame_equal(amostra[fixed_cols], result[fixed_cols])
