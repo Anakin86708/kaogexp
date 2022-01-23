@@ -20,7 +20,7 @@ class RandomCategoricalSampler:
         """
         self.data = data.copy()
         self.cat_cols = cat_cols.copy()
-        self.fixed_cols = fixed_cols.copy()
+        self.fixed_cols = fixed_cols.copy() if fixed_cols is not None else pd.Index([])
 
         self.colunas_alteradas = self._definir_colunas_alteradas()
         self.unique_cat_cols = self._obter_valores_cat_unicos()
