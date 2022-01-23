@@ -8,6 +8,7 @@ from kaog import KAOG
 
 from data.loader.DatasetFromMemory import DatasetFromMemory
 from explainer.kaog.custom_kaog import KAOGAdaptado
+from explainer.otimizer import SparsityOptimization
 from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
@@ -22,7 +23,7 @@ class KAOGExp:
     LIMITE_EPSILON = 1
 
     def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler: SamplerAbstract,
-                 fixed_cols: Optional[pd.Index] = None):
+                 fixed_cols: Optional[pd.Index] = None, otimizar: bool = True):
         """
 
         :param dataset: Utilizado para obter informações sobre o dataset, como o tratador e comunas categóricas.
@@ -35,6 +36,8 @@ class KAOGExp:
         self.sampler = sampler
         self.fixed_cols = fixed_cols.copy() if fixed_cols is not None else None
         self._busca_invalida = False
+        self._otimizar = otimizar
+        self._otimizador = SparsityOptimization(modelo, dataset.nomes_colunas_categoricas)
 
         self.sampler.fixed_cols = self.fixed_cols
 
@@ -95,7 +98,9 @@ class KAOGExp:
                 logging.info(f'KAOG criado.')
                 try:
                     result = metodo(kaog, instancia, **kwargs)
-                    return result  # TODO: otimizar as variáveis alteradas
+                    if self._otimizar:
+                        result = self._otimizador.optimize(result)
+                    return result
                 except RuntimeError as e:
                     logging.info(f'{e}\nContinuando amostragem...')
                     self._continuar_amostragem()
