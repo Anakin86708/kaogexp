@@ -61,6 +61,6 @@ class RandomCategoricalSampler:
         return result
 
     def _aleatorizar_series(self, row: pd.Series):
-        for col, _ in row[self.colunas_alteradas].iteritems():
-            row[col] = choice(self.unique_cat_cols[col])
+        for col, item in row[self.colunas_alteradas].iteritems():
+            row[col] = choice(list(filter(lambda x: x != item, self.unique_cat_cols[col])))
         return row
