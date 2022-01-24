@@ -7,6 +7,7 @@ import pandas as pd
 from kaog import KAOG
 
 from data.loader.DatasetFromMemory import DatasetFromMemory
+from data.sampler.categorical_sampler import RandomCategoricalSampler
 from explainer.kaog.custom_kaog import KAOGAdaptado
 from explainer.otimizer import SparsityOptimization
 from kaogexp.data.loader import NOME_COLUNA_Y
@@ -22,22 +23,23 @@ class KAOGExp:
     NUM_SAMPLES = 100
     LIMITE_EPSILON = 1
 
-    def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler: SamplerAbstract,
+    def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler_numeric: SamplerAbstract,
                  fixed_cols: Optional[pd.Index] = None, otimizar: bool = True):
         """
 
         :param dataset: Utilizado para obter informações sobre o dataset, como o tratador e comunas categóricas.
         :param modelo: Classificador utilizado sobre o dataset.
-        :param sampler: Utilizado para obter amostras ao redor de uma instância sendo explicada.
+        :param sampler_numeric: Utilizado para obter amostras ao redor de uma instância sendo explicada.
         :param fixed_cols: Colunas fixas do dataset que não são alteradas durante a explicação.
         """
         self.dataset = dataset
         self.modelo = modelo
-        self.sampler = sampler
+        self.sampler = sampler_numeric
         self.fixed_cols = fixed_cols.copy() if fixed_cols is not None else None
         self._busca_invalida = False
         self._otimizar = otimizar
         self._otimizador = SparsityOptimization(modelo, dataset.nomes_colunas_categoricas)
+        self._sampler_cat = RandomCategoricalSampler(dataset.dataset(), dataset.nomes_colunas_categoricas, fixed_cols)
 
         self.sampler.fixed_cols = self.fixed_cols
 
@@ -94,6 +96,7 @@ class KAOGExp:
                 amostragem_com_y = amostragem.copy()
                 amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
                 amostra_completa = amostragem_com_y.append(instancia)
+                amostra_completa = self._realizar_amostragem_categorica(amostra_completa)
                 kaog = self._criar_kaog(amostra_completa)
                 logging.info(f'KAOG criado.')
                 try:
@@ -213,3 +216,6 @@ class KAOGExp:
                 normalizador=normalizador
             )
         )
+
+    def _realizar_amostragem_categorica(self, amostra_completa: pd.DataFrame):
+        return self._sampler_cat.realizar_amostragem(amostra_completa)

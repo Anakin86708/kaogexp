@@ -41,13 +41,14 @@ sampler = LatinSampler(epsilon=epsilon, seed=seed, limite_epsilon=limite_epsilon
 
 # %%
 metodo = Counterfactual
-explicador = KAOGExp(train_data, model, sampler)
+fixed_cols = pd.Index(['sex', 'age', 'race', 'native-country'])
+explicador = KAOGExp(train_data, model, sampler, fixed_cols=fixed_cols, otimizar=True)
 classe_desejada = 1
 tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
 print('Realizando explicacao...')
-explicacoes = explicador.explicar(test_data.dataset().sample(5), metodo=metodo, classe_desejada=classe_desejada,
+explicacoes = explicador.explicar(test_data.dataset().sample(1), metodo=metodo, classe_desejada=classe_desejada,
                                   tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
 # %%
@@ -76,10 +77,17 @@ cerscore = cers.calcular(explicacoes, proximidades)
 print('Validade:', validades)
 print('Proporção de validade: %.3f' % (validades.count(True) / len(validades)))
 print('Dispersão:', dispersao)
-fig = Dispersao.plot(dispersao)
+# fig = Dispersao.plot(dispersao)
 print('Proximidade:', proximidades)
 print('Média:\n', pd.Series(proximidades).describe())
 print('CERScore:', cerscore)
 
 # %%
-fig.show()
+# fig.show()
+
+# %%
+cat_cols = test_data.nomes_colunas_categoricas
+for i, item in enumerate(explicacoes):
+    if item is not None and not item.instancia_original[cat_cols].equals(item.instancia_modificada[cat_cols]):
+        print('Found ', i)
+        break

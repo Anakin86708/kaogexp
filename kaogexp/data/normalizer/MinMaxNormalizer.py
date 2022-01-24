@@ -24,6 +24,7 @@ class MinMaxNormalizer(NormalizerAbstract):
         :rtype: Union[pd.Series, pd.DataFrame]
         :raise: ValueError: Se o tipo de `instancia` não for um pd.Series ou pd.DataFrame.
         """
+        instancia = instancia.copy()
         if isinstance(instancia, pd.Series):
             return self.transform(pd.DataFrame([instancia])).iloc[0]
 
@@ -42,6 +43,7 @@ class MinMaxNormalizer(NormalizerAbstract):
         :return: Instância revertida, contendo valores condizentes com os dados originais.
         :rtype: Union[pd.Series, pd.DataFrame]
         """
+        instancia = instancia.copy()
         if isinstance(instancia, pd.Series):
             return self.inverse_transform(pd.DataFrame([instancia])).iloc[0]
         elif isinstance(instancia, pd.DataFrame):
