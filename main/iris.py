@@ -14,6 +14,7 @@ from kaogexp.metrics.proximity import Proximity
 from kaogexp.metrics.validity import Validity
 from kaogexp.model.RandomForestModel import RandomForestModel
 from main.new_distance import NewDistance
+from metrics.carla_metrics import CARLADistances
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -63,19 +64,24 @@ cers = CERScore(dist.calculate)
 validades = []
 dispersao = []
 proximidades = []
+carla_distances = []
 for item in explicacoes:
     validades.append(Validity.calcular(item))
     dispersao.append(Dispersao.calcular(item))
     proximidades.append(prox.calcular(item))
+    carla_distances.append(CARLADistances.calcular(item))
 cerscore = cers.calcular(explicacoes, proximidades)
 
 print('Validade:', validades)
 print('Proporção de validade: %.3f' % (validades.count(True) / len(validades)))
 print('Dispersão:', dispersao)
-fig = Dispersao.plot(dispersao)
 print('Proximidade:', proximidades)
 print('Média:\n', pd.Series(proximidades).describe())
 print('CERScore:', cerscore)
+print('Carla Distances:')
+for d in carla_distances:
+    print(d)
 
 # %%
-fig.show()
+# fig = Dispersao.plot(dispersao)
+# fig.show()
