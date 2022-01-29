@@ -6,7 +6,11 @@ import numpy as np
 import pandas as pd
 from kaog import KAOG
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
+from data.loader.DatasetFromMemory import DatasetFromMemory
+from data.sampler.categorical_sampler import RandomCategoricalSampler
+from explainer.kaog.custom_kaog import KAOGAdaptado
+from explainer.otimizer import SparsityOptimization
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
@@ -19,11 +23,25 @@ class KAOGExp:
     NUM_SAMPLES = 100
     LIMITE_EPSILON = 1
 
-    def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler: SamplerAbstract):
+    def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler_numeric: SamplerAbstract,
+                 fixed_cols: Optional[pd.Index] = None, otimizar: bool = True):
+        """
+
+        :param dataset: Utilizado para obter informações sobre o dataset, como o tratador e comunas categóricas.
+        :param modelo: Classificador utilizado sobre o dataset.
+        :param sampler_numeric: Utilizado para obter amostras ao redor de uma instância sendo explicada.
+        :param fixed_cols: Colunas fixas do dataset que não são alteradas durante a explicação.
+        """
         self.dataset = dataset
         self.modelo = modelo
-        self.sampler = sampler
+        self.sampler = sampler_numeric
+        self.fixed_cols = fixed_cols.copy() if fixed_cols is not None else None
         self._busca_invalida = False
+        self._otimizar = otimizar
+        self._otimizador = SparsityOptimization(modelo, dataset.nomes_colunas_categoricas)
+        self._sampler_cat = RandomCategoricalSampler(dataset.dataset(), dataset.nomes_colunas_categoricas, fixed_cols)
+
+        self.sampler.fixed_cols = self.fixed_cols
 
     def explicar(self,
                  instancia: Union[pd.Series, pd.DataFrame],
@@ -76,18 +94,22 @@ class KAOGExp:
 
                 logging.info(f'Amostragem válida encontrada. Realizando KAOG.')
                 amostragem_com_y = amostragem.copy()
-                amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
+                amostragem_com_y[ColunaYSingleton().NOME_COLUNA_Y] = y_amostragem
                 amostra_completa = amostragem_com_y.append(instancia)
+                amostra_completa = self._realizar_amostragem_categorica(amostra_completa)
                 kaog = self._criar_kaog(amostra_completa)
                 logging.info(f'KAOG criado.')
                 try:
-                    return metodo(kaog, instancia, **kwargs)
+                    result = metodo(kaog, instancia, **kwargs)
+                    if self._otimizar:
+                        result = self._otimizador.optimize(result)
+                    return result
                 except RuntimeError as e:
                     logging.info(f'{e}\nContinuando amostragem...')
                     self._continuar_amostragem()
 
         except ValueError as e:
-            logging.info(f'Não foi possível encontrar uma amostra válida.\n{e}\n\n')
+            logging.error(f'Não foi possível encontrar uma amostra válida.\n{e}\n\n')
             return None
 
     def _obter_amostra_valida(self, classe_desejada: int, instancia: pd.Series):
@@ -181,8 +203,19 @@ class KAOGExp:
         """
         encoded = self.dataset.tratador.encode(amostragem)
         predict = self.modelo.predict(encoded)
-        return pd.Series(predict, index=amostragem.index, name=NOME_COLUNA_Y)
+        return pd.Series(predict, index=amostragem.index, name=ColunaYSingleton().NOME_COLUNA_Y)
 
     def _criar_kaog(self, amostra_completa: pd.DataFrame) -> KAOG:
         colunas_categoricas = self.dataset.nomes_colunas_categoricas
-        return KAOG(amostra_completa, colunas_categoricas)
+        normalizador = self.dataset.normalizador
+        return KAOGAdaptado(
+            DatasetFromMemory(
+                normalizador.inverse_transform(amostra_completa),
+                self.dataset.nomes_colunas_categoricas,
+                tratador=self.dataset.tratador,
+                normalizador=normalizador
+            )
+        )
+
+    def _realizar_amostragem_categorica(self, amostra_completa: pd.DataFrame):
+        return self._sampler_cat.realizar_amostragem(amostra_completa)

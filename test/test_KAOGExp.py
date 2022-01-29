@@ -4,8 +4,8 @@ from unittest import expectedFailure
 import pandas as pd
 from kaog import KAOG
 
+from data.loader import ColunaYSingleton
 from data.loader.DatasetFromMemory import DatasetFromMemory
-from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
@@ -48,7 +48,7 @@ class KAOGExpTest(unittest.TestCase):
         input_ = adult.dataset(encoded=False).sample(1).iloc[0]
         sample = self.instance._realizar_amostragem(input_)
         self.assertEqual(KAOGExp.NUM_SAMPLES, sample.shape[0])
-        pd.testing.assert_index_equal(input_.index.drop(NOME_COLUNA_Y), sample.columns)
+        pd.testing.assert_index_equal(input_.index.drop(ColunaYSingleton().NOME_COLUNA_Y), sample.columns)
 
     def test_realizar_amostragem_dataframe_raise(self):
         """Realizar amostragem must recive `pd.Series` only."""
@@ -72,7 +72,7 @@ class KAOGExpTest(unittest.TestCase):
         input_ = adult.dataset(encoded=False).sample(1).iloc[0]
         sample = self.instance.sampler.realizar_amostragem(input_, KAOGExpTest.QTD_AMOSTRAS)
         y = self.instance._classificar_amostragem(sample)
-        df = pd.concat([sample, pd.Series(y, name=NOME_COLUNA_Y)], axis=1)
+        df = pd.concat([sample, pd.Series(y, name=ColunaYSingleton().NOME_COLUNA_Y)], axis=1)
         kaog = self.instance._criar_kaog(df)
         self.assertIsInstance(kaog, KAOG)
 
@@ -91,12 +91,12 @@ class KAOGExpTest(unittest.TestCase):
         classe_desejada = 1
         iris = Data.create_new_instance_iris()
         data = iris.dataset(encoded=False)
-        input_ = data[data[NOME_COLUNA_Y] == classe_atual].sample(1).iloc[0]
+        input_ = data[data[ColunaYSingleton().NOME_COLUNA_Y] == classe_atual].sample(1).iloc[0]
         metodo = Counterfactual
         input_index = input_.name
         train_data = data.drop(input_index)
 
-        modelo = RandomForestModel(iris.x().drop(input_index), iris.y().drop(input_index))
+        modelo = RandomForestModel(iris.x().drop(input_index), iris.y().drop(input_index), iris.tratador)
         sampler = LatinSampler(KAOGExpTest.EPSILON)
         instance = KAOGExp(DatasetFromMemory(train_data, pd.Index([])), modelo, sampler)
 
@@ -106,7 +106,8 @@ class KAOGExpTest(unittest.TestCase):
         pd.testing.assert_series_equal(input_, result.instancia_original)
         self.assertIsInstance(result, metodo)
         self.assertEqual(classe_desejada, result.classe_desejada)
-        self.assertEqual(classe_desejada, modelo.predict(result.instancia_modificada.drop(NOME_COLUNA_Y)))
+        self.assertEqual(classe_desejada,
+                         modelo.predict(result.instancia_modificada.drop(ColunaYSingleton().NOME_COLUNA_Y)))
 
     def test_explicat_dados_diferentes_adult(self):
         """
@@ -116,12 +117,12 @@ class KAOGExpTest(unittest.TestCase):
         classe_desejada = 1
         adult = Data.create_new_instance_adult()
         data = adult.dataset(encoded=False)
-        input_ = data[data[NOME_COLUNA_Y] == classe_atual].sample(1).iloc[0]
+        input_ = data[data[ColunaYSingleton().NOME_COLUNA_Y] == classe_atual].sample(1).iloc[0]
         metodo = Counterfactual
         input_index = input_.name
         train_data = data.drop(input_index)
 
-        modelo = RandomForestModel(adult.x(encoded=True).drop(input_index), adult.y().drop(input_index))
+        modelo = RandomForestModel(adult.x(encoded=True).drop(input_index), adult.y().drop(input_index), adult.tratador)
         sampler = LatinSampler(KAOGExpTest.EPSILON)
         instance = KAOGExp(DatasetFromMemory(train_data, adult._nomes_colunas_categoricas), modelo, sampler)
 
@@ -131,8 +132,32 @@ class KAOGExpTest(unittest.TestCase):
         pd.testing.assert_series_equal(input_, result.instancia_original)
         self.assertIsInstance(result, metodo)
         self.assertEqual(classe_desejada, result.classe_desejada)
-        modificada = adult.tratador.encode(result.instancia_modificada.drop(NOME_COLUNA_Y))
+        modificada = adult.tratador.encode(result.instancia_modificada.drop(ColunaYSingleton().NOME_COLUNA_Y))
         self.assertEqual(classe_desejada, modelo.predict(modificada))
+
+    def test_fixed_cols(self):
+        adult = Data.create_new_instance_adult()
+        data = adult.dataset(encoded=False)
+        input_ = data[data[ColunaYSingleton().NOME_COLUNA_Y] == 0].sample(1).iloc[0]
+        metodo = Counterfactual
+        input_index = input_.name
+        train_data = data.drop(input_index)
+        fixed_cols = pd.Index(['age', 'sex', 'hours-per-week'])
+        modelo = RandomForestModel(adult.x(encoded=True).drop(input_index), adult.y().drop(input_index), adult.tratador)
+        sampler = LatinSampler(KAOGExpTest.EPSILON)
+        instance = KAOGExp(DatasetFromMemory(train_data, adult._nomes_colunas_categoricas), modelo, sampler,
+                           fixed_cols=fixed_cols)
+
+        result = instance.explicar(input_, metodo, classe_desejada=1,
+                                   normalizador_associado=adult.normalizador,
+                                   tratador_associado=adult.tratador)
+
+        print("original:\n", result.instancia_original)
+        print("\nmodificada:\n", result.instancia_modificada)
+
+        pd.testing.assert_index_equal(fixed_cols, instance.fixed_cols)
+        pd.testing.assert_series_equal(input_, result.instancia_original)
+        pd.testing.assert_series_equal(input_[fixed_cols], result.instancia_modificada[fixed_cols], check_names=False)
 
 if __name__ == '__main__':
     unittest.main()

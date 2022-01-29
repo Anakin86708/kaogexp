@@ -14,6 +14,7 @@ from kaogexp.metrics.proximity import Proximity
 from kaogexp.metrics.validity import Validity
 from kaogexp.model.RandomForestModel import RandomForestModel
 from main.new_distance import NewDistance
+from metrics.carla_metrics import CARLADistances
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -28,7 +29,7 @@ test_data = DatasetFromMemory(test_data, index)
 # %%
 x = train_data.x(normalizado=True, encoded=True)
 y = train_data.y()
-model = RandomForestModel(x, y)
+model = RandomForestModel(x, y, train_data.tratador)
 
 # %%
 epsilon = 0.05
@@ -36,21 +37,18 @@ limite_epsilon = 1.0
 seed = 42
 sampler = LatinSampler(epsilon=epsilon, seed=seed, limite_epsilon=limite_epsilon)
 # %%
-dist = NewDistance(test_data.x(), test_data.nomes_colunas_categoricas)
 metodo = Counterfactual
-metodo.set_metrica_distancia(dist.calculate)
-# %%
 explicador = KAOGExp(train_data, model, sampler)
 classe_desejada = 2
 tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
 print('Realizando explicacao...')
-explicacao = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, classe_desejada=classe_desejada,
-                                 tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
+explicacoes = explicador.explicar(test_data.dataset().sample(2), metodo=metodo, classe_desejada=classe_desejada,
+                                  tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
 # %%
-for item in explicacao:
+for item in explicacoes:
     try:
         print(item)
     except AttributeError:
@@ -58,22 +56,32 @@ for item in explicacao:
 
 # %%
 # Métricas
+logging.basicConfig(level=logging.INFO)
+dist = NewDistance(test_data.dataset(), test_data.nomes_colunas_categoricas)
+logging.basicConfig(level=None)
 prox = Proximity(dist.calculate)
 cers = CERScore(dist.calculate)
 validades = []
 dispersao = []
 proximidades = []
-for item in explicacao:
+carla_distances = []
+for item in explicacoes:
     validades.append(Validity.calcular(item))
     dispersao.append(Dispersao.calcular(item))
     proximidades.append(prox.calcular(item))
-cerscore = cers.calcular(explicacao, proximidades)
+    carla_distances.append(CARLADistances.calcular(item))
+cerscore = cers.calcular(explicacoes, proximidades)
 
 print('Validade:', validades)
 print('Proporção de validade: %.3f' % (validades.count(True) / len(validades)))
 print('Dispersão:', dispersao)
-fig = Dispersao.plot(dispersao)
-fig.show()
 print('Proximidade:', proximidades)
 print('Média:\n', pd.Series(proximidades).describe())
 print('CERScore:', cerscore)
+print('Carla Distances:')
+for d in carla_distances:
+    print(d)
+
+# %%
+# fig = Dispersao.plot(dispersao)
+# fig.show()

@@ -4,6 +4,8 @@ from typing import Union
 
 import pandas as pd
 
+from data.loader import ColunaYSingleton
+
 
 class TreatmentAbstract(ABC):
     def __init__(self, nomes_colunas_originais: pd.Index, nomes_colunas_encoded: pd.Index):
@@ -17,6 +19,12 @@ class TreatmentAbstract(ABC):
     @property
     def nomes_colunas_encoded(self) -> pd.Index:
         return self._nomes_colunas_encoded
+
+    @property
+    def nomes_colunas_categoricas_encoded(self):
+        return pd.Index({*self.nomes_colunas_encoded} - {*self.nomes_colunas_originais}).drop(
+            ColunaYSingleton().NOME_COLUNA_Y,
+            errors='ignore')
 
     @abstractmethod
     def encode(self, instancia: Union[pd.Series, pd.DataFrame]) -> Union[pd.Series, pd.DataFrame]:

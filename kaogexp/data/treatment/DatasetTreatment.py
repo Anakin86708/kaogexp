@@ -4,7 +4,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
 
 SUBSTITUTO_NA = np.nan
@@ -30,12 +30,12 @@ class DatasetTreatment(TreatmentAbstract):
             return self.encode(pd.DataFrame([instancia])).iloc[0]
 
         elif isinstance(instancia, pd.DataFrame):
-            dummies = pd.get_dummies(instancia.drop(NOME_COLUNA_Y, axis=1, errors='ignore'))
+            dummies = pd.get_dummies(instancia.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1, errors='ignore'))
             missing_cols = self._get_missing_cols(dummies)
             dummies = dummies.assign(**{col: 0 for col in missing_cols})
-            if NOME_COLUNA_Y in instancia.columns:
-                dummies = pd.concat([dummies, instancia[NOME_COLUNA_Y]], axis=1)
-            assert NOME_COLUNA_Y in dummies if NOME_COLUNA_Y in instancia else NOME_COLUNA_Y not in dummies
+            if ColunaYSingleton().NOME_COLUNA_Y in instancia.columns:
+                dummies = pd.concat([dummies, instancia[ColunaYSingleton().NOME_COLUNA_Y]], axis=1)
+            assert ColunaYSingleton().NOME_COLUNA_Y in dummies if ColunaYSingleton().NOME_COLUNA_Y in instancia else ColunaYSingleton().NOME_COLUNA_Y not in dummies
             assert self._get_missing_cols(dummies).empty
             return dummies
         else:
@@ -77,7 +77,7 @@ class DatasetTreatment(TreatmentAbstract):
         :raise ValueError: Se restar algum valor NA do conjunto de dados.
         """
         categoricas = DatasetTreatment._obter_cols_categoricas(dataset)
-        categoricas_and_y = pd.Index(categoricas.to_list() + [NOME_COLUNA_Y])
+        categoricas_and_y = pd.Index(categoricas.to_list() + [ColunaYSingleton().NOME_COLUNA_Y])
         numericas = dataset.drop(categoricas_and_y, axis=1).columns
 
         dataset[categoricas] = dataset[categoricas].fillna(method='ffill')
@@ -103,9 +103,9 @@ class DatasetTreatment(TreatmentAbstract):
         """
         nomes_colunas_originais = dataset.columns
         # Colunas dummy sem a coluna de y
-        dummy_columns = pd.get_dummies(dataset.drop(NOME_COLUNA_Y, axis=1, errors='ignore')).columns
+        dummy_columns = pd.get_dummies(dataset.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1, errors='ignore')).columns
         # Adiciona a coluna de y
-        nomes_colunas_encoded = pd.Index(dummy_columns.to_list() + [NOME_COLUNA_Y])
+        nomes_colunas_encoded = pd.Index(dummy_columns.to_list() + [ColunaYSingleton().NOME_COLUNA_Y])
         return nomes_colunas_encoded, nomes_colunas_originais
 
     def _get_missing_cols(self, dummies: pd.DataFrame) -> pd.Index:
@@ -117,10 +117,11 @@ class DatasetTreatment(TreatmentAbstract):
         :return: Colunas que não estão presentes em `dummies` mas que são previstas no formato encoding.
         :rtype: pd.Index
         """
-        return self.nomes_colunas_encoded.drop(NOME_COLUNA_Y).difference(dummies.columns)
+        return self.nomes_colunas_encoded.drop(ColunaYSingleton().NOME_COLUNA_Y).difference(dummies.columns)
 
     @staticmethod
     def _obter_cols_categoricas(dataset):
-        columns = dataset.drop(NOME_COLUNA_Y, axis=1, errors='ignore').select_dtypes(['category']).columns
-        assert NOME_COLUNA_Y not in columns
+        columns = dataset.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1, errors='ignore').select_dtypes(
+            ['category']).columns
+        assert ColunaYSingleton().NOME_COLUNA_Y not in columns
         return columns

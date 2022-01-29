@@ -1,8 +1,10 @@
+import logging
+
 import numpy as np
 import pandas as pd
 from kaog import KAOG
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from kaogexp.data.normalizer.NormalizerAbstract import NormalizerAbstract
 from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
@@ -34,11 +36,11 @@ class Counterfactual(MethodAbstract):
 
     @property
     def classe_modificada(self):
-        return self.instancia_modificada.loc[NOME_COLUNA_Y]
+        return self.instancia_modificada.loc[ColunaYSingleton().NOME_COLUNA_Y]
 
     @property
     def classe_original(self):
-        return self.instancia_original.loc[NOME_COLUNA_Y]
+        return self.instancia_original.loc[ColunaYSingleton().NOME_COLUNA_Y]
 
     @property
     def pureza_original(self):
@@ -153,6 +155,7 @@ class Counterfactual(MethodAbstract):
             instancia_original = self._remover_normalizacao(self.instancia_original)
             instancia_modificada = self._remover_normalizacao(self.instancia_modificada)
         except RuntimeError:
+            logging.error("Não foi possível reverter a normalização")
             instancia_original = self.instancia_original
             instancia_modificada = self.instancia_modificada
 

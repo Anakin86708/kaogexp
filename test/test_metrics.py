@@ -4,7 +4,7 @@ from unittest import expectedFailure
 
 import pandas as pd
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from kaogexp.metrics.CERScore import CERScore
 from kaogexp.metrics.dispersao import Dispersao
 from kaogexp.metrics.proximity import Proximity
@@ -20,14 +20,14 @@ class FakeCounterfactual:
 
     @property
     def classe_modificada(self):
-        return self.instancia_modificada[NOME_COLUNA_Y]
+        return self.instancia_modificada[ColunaYSingleton().NOME_COLUNA_Y]
 
 
 class ProximityTest(unittest.TestCase):
     def test_numeric(self):
-        original = pd.Series({'a': 1, 'b': 2, 'c': 3, NOME_COLUNA_Y: 1})
-        modificada = pd.Series({'a': 1, 'b': 5, 'c': 6, NOME_COLUNA_Y: 1})
-        data = pd.DataFrame([original, modificada])
+        original = pd.Series({'a': 1, 'b': 0, 'c': 1, ColunaYSingleton().NOME_COLUNA_Y: 1})
+        modificada = pd.Series({'a': 1, 'b': 1, 'c': 0, ColunaYSingleton().NOME_COLUNA_Y: 1})
+        data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = sqrt(2)
 
@@ -37,9 +37,9 @@ class ProximityTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_categorical(self):
-        original = pd.Series({'a': 1, 'b': 3, 'c': "M", NOME_COLUNA_Y: 1})
-        modificada = pd.Series({'a': 1, 'b': 5, 'c': "F", NOME_COLUNA_Y: 1})
-        data = pd.DataFrame([original, modificada])
+        original = pd.Series({'a': 1, 'b': 0, 'c': "M", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        modificada = pd.Series({'a': 1, 'b': 1, 'c': "F", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = sqrt(2)
         dist = NewDistance(data, pd.Index(['c']))
@@ -48,9 +48,9 @@ class ProximityTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_categorical_same_num(self):
-        original = pd.Series({'a': 1, 'b': 3, 'c': "M", NOME_COLUNA_Y: 1})
-        modificada = pd.Series({'a': 1, 'b': 3, 'c': "F", NOME_COLUNA_Y: 1})
-        data = pd.DataFrame([original, modificada])
+        original = pd.Series({'a': 1, 'b': 1, 'c': "M", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        modificada = pd.Series({'a': 1, 'b': 1, 'c': "F", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = 1
         dist = NewDistance(data, pd.Index(['c']))
@@ -59,9 +59,9 @@ class ProximityTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_categorical_same_cat(self):
-        original = pd.Series({'a': 1, 'b': 3, 'c': "F", NOME_COLUNA_Y: 1})
-        modificada = pd.Series({'a': 1, 'b': 5, 'c': "F", NOME_COLUNA_Y: 1})
-        data = pd.DataFrame([original, modificada])
+        original = pd.Series({'a': 1, 'b': 0, 'c': "F", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        modificada = pd.Series({'a': 1, 'b': 1, 'c': "F", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = 1
         dist = NewDistance(data, pd.Index(['c']))
@@ -191,8 +191,8 @@ class CERScoreTest(unittest.TestCase):
 
     def test_numeric(self):
         c1 = FakeCounterfactual(
-            pd.Series({'a': 1, 'b': 2, 'c': 3, 'target': 1}),
-            pd.Series({'a': 1, 'b': 5, 'c': 6, 'target': 0})
+            pd.Series({'a': 1, 'b': 0, 'c': 0, 'target': 0}),
+            pd.Series({'a': 1, 'b': 1, 'c': 1, 'target': 0})
         )
         dist_c1 = sqrt(2)
         c2 = FakeCounterfactual(
@@ -201,20 +201,20 @@ class CERScoreTest(unittest.TestCase):
         )
         dist_c2 = 0
         c3 = FakeCounterfactual(
-            pd.Series({'a': 1, 'b': 2, 'c': 3, 'target': 1}),
-            pd.Series({'a': 1, 'b': 5, 'c': 6, 'target': 0})
+            pd.Series({'a': 1, 'b': 0, 'c': 0, 'target': 0}),
+            pd.Series({'a': 1, 'b': 1, 'c': 1, 'target': 0})
         )
         dist_c3 = sqrt(2)
         counterfactuals = [c1, c2, c3]
-        expected = .92436
+        expected = (2 * sqrt(2)) / 3
 
         data = pd.DataFrame([
-            pd.Series({'a': 1, 'b': 2, 'c': 3, 'target': 1}),
-            pd.Series({'a': 1, 'b': 5, 'c': 6, 'target': 0}),
+            pd.Series({'a': 1, 'b': 0, 'c': 0, 'target': 0}),
+            pd.Series({'a': 1, 'b': 1, 'c': 1, 'target': 0}),
             pd.Series({'a': 0, 'b': 1, 'c': 1, 'target': 0}),
             pd.Series({'a': 0, 'b': 1, 'c': 1, 'target': 0}),
-            pd.Series({'a': 1, 'b': 2, 'c': 3, 'target': 1}),
-            pd.Series({'a': 1, 'b': 5, 'c': 6, 'target': 0})
+            pd.Series({'a': 1, 'b': 0, 'c': 0, 'target': 0}),
+            pd.Series({'a': 1, 'b': 1, 'c': 1, 'target': 0})
         ])
         dist = NewDistance(data, pd.Index([]))
         cers = CERScore(dist.calculate)
