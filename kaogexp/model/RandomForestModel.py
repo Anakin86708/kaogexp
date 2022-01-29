@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 
-from data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from data.treatment.TreatmentAbstract import TreatmentAbstract
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.model.ModelAbstract import ModelAbstract
@@ -41,7 +41,7 @@ class RandomForestModel(ModelAbstract):
         return predict
 
     def _predict_dataframe(self, x: pd.DataFrame):
-        x.drop(NOME_COLUNA_Y, errors='ignore', axis=1, inplace=True)
+        x.drop(ColunaYSingleton().NOME_COLUNA_Y, errors='ignore', axis=1, inplace=True)
         if x.shape[1] == self.raw_model.n_features_in_:
             self.__logger.debug('Data already encoded')
             predict = self.raw_model.predict(x)
@@ -51,7 +51,7 @@ class RandomForestModel(ModelAbstract):
         return predict
 
     def _predict_series(self, x: pd.Series):
-        x.drop(NOME_COLUNA_Y, errors='ignore', inplace=True)
+        x.drop(ColunaYSingleton().NOME_COLUNA_Y, errors='ignore', inplace=True)
         if x.shape[0] == self.raw_model.n_features_in_:
             self.__logger.debug('Series predict already encoded')
             x_values_reshape = x.values.reshape(1, -1)

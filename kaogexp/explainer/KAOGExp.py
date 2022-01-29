@@ -6,11 +6,11 @@ import numpy as np
 import pandas as pd
 from kaog import KAOG
 
+from data.loader import ColunaYSingleton
 from data.loader.DatasetFromMemory import DatasetFromMemory
 from data.sampler.categorical_sampler import RandomCategoricalSampler
 from explainer.kaog.custom_kaog import KAOGAdaptado
 from explainer.otimizer import SparsityOptimization
-from kaogexp.data.loader import NOME_COLUNA_Y
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
@@ -94,7 +94,7 @@ class KAOGExp:
 
                 logging.info(f'Amostragem válida encontrada. Realizando KAOG.')
                 amostragem_com_y = amostragem.copy()
-                amostragem_com_y[NOME_COLUNA_Y] = y_amostragem
+                amostragem_com_y[ColunaYSingleton().NOME_COLUNA_Y] = y_amostragem
                 amostra_completa = amostragem_com_y.append(instancia)
                 amostra_completa = self._realizar_amostragem_categorica(amostra_completa)
                 kaog = self._criar_kaog(amostra_completa)
@@ -203,7 +203,7 @@ class KAOGExp:
         """
         encoded = self.dataset.tratador.encode(amostragem)
         predict = self.modelo.predict(encoded)
-        return pd.Series(predict, index=amostragem.index, name=NOME_COLUNA_Y)
+        return pd.Series(predict, index=amostragem.index, name=ColunaYSingleton().NOME_COLUNA_Y)
 
     def _criar_kaog(self, amostra_completa: pd.DataFrame) -> KAOG:
         colunas_categoricas = self.dataset.nomes_colunas_categoricas

@@ -4,7 +4,7 @@ from unittest import expectedFailure
 
 import pandas as pd
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from kaogexp.metrics.CERScore import CERScore
 from kaogexp.metrics.dispersao import Dispersao
 from kaogexp.metrics.proximity import Proximity
@@ -20,14 +20,14 @@ class FakeCounterfactual:
 
     @property
     def classe_modificada(self):
-        return self.instancia_modificada[NOME_COLUNA_Y]
+        return self.instancia_modificada[ColunaYSingleton().NOME_COLUNA_Y]
 
 
 class ProximityTest(unittest.TestCase):
     def test_numeric(self):
-        original = pd.Series({'a': 1, 'b': 0, 'c': 1, NOME_COLUNA_Y: 1})
-        modificada = pd.Series({'a': 1, 'b': 1, 'c': 0, NOME_COLUNA_Y: 1})
-        data = pd.DataFrame([original, modificada]).drop(NOME_COLUNA_Y, axis=1)
+        original = pd.Series({'a': 1, 'b': 0, 'c': 1, ColunaYSingleton().NOME_COLUNA_Y: 1})
+        modificada = pd.Series({'a': 1, 'b': 1, 'c': 0, ColunaYSingleton().NOME_COLUNA_Y: 1})
+        data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = sqrt(2)
 
@@ -37,9 +37,9 @@ class ProximityTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_categorical(self):
-        original = pd.Series({'a': 1, 'b': 0, 'c': "M", NOME_COLUNA_Y: 1})
-        modificada = pd.Series({'a': 1, 'b': 1, 'c': "F", NOME_COLUNA_Y: 1})
-        data = pd.DataFrame([original, modificada]).drop(NOME_COLUNA_Y, axis=1)
+        original = pd.Series({'a': 1, 'b': 0, 'c': "M", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        modificada = pd.Series({'a': 1, 'b': 1, 'c': "F", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = sqrt(2)
         dist = NewDistance(data, pd.Index(['c']))
@@ -48,9 +48,9 @@ class ProximityTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_categorical_same_num(self):
-        original = pd.Series({'a': 1, 'b': 1, 'c': "M", NOME_COLUNA_Y: 1})
-        modificada = pd.Series({'a': 1, 'b': 1, 'c': "F", NOME_COLUNA_Y: 1})
-        data = pd.DataFrame([original, modificada]).drop(NOME_COLUNA_Y, axis=1)
+        original = pd.Series({'a': 1, 'b': 1, 'c': "M", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        modificada = pd.Series({'a': 1, 'b': 1, 'c': "F", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = 1
         dist = NewDistance(data, pd.Index(['c']))
@@ -59,9 +59,9 @@ class ProximityTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_categorical_same_cat(self):
-        original = pd.Series({'a': 1, 'b': 0, 'c': "F", NOME_COLUNA_Y: 1})
-        modificada = pd.Series({'a': 1, 'b': 1, 'c': "F", NOME_COLUNA_Y: 1})
-        data = pd.DataFrame([original, modificada]).drop(NOME_COLUNA_Y, axis=1)
+        original = pd.Series({'a': 1, 'b': 0, 'c': "F", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        modificada = pd.Series({'a': 1, 'b': 1, 'c': "F", ColunaYSingleton().NOME_COLUNA_Y: 1})
+        data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = 1
         dist = NewDistance(data, pd.Index(['c']))

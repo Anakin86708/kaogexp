@@ -2,8 +2,8 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from kaog.util import NOME_COLUNA_Y
 
+from data.loader import ColunaYSingleton
 from main.new_distance import NewDistance
 from util import Data
 
@@ -66,7 +66,7 @@ class NewDistanceTest(unittest.TestCase):
         self.assertAlmostEqual(expected, result, places=4)
 
     def _arrange_iris(self):
-        data = Data.iris_dataset().drop(columns=NOME_COLUNA_Y)
+        data = Data.iris_dataset().drop(columns=ColunaYSingleton().NOME_COLUNA_Y)
         x: pd.Series = data.loc[0]
         y: pd.Series = data.loc[1]
         instance = NewDistance(data, pd.Index([]))

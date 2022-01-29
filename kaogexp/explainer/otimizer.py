@@ -4,7 +4,7 @@ from typing import List
 
 import pandas as pd
 
-from data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from explainer.methods.Counterfactual import Counterfactual
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
 from kaogexp.model.ModelAbstract import ModelAbstract
@@ -43,7 +43,7 @@ class SparsityOptimization:
             # se encontrar algum que permanceça na classe desejada, parar
             classe_otimizada = self.modelo.predict(item)
             if classe_otimizada == instancia.classe_desejada:
-                item[NOME_COLUNA_Y] = classe_otimizada
+                item[ColunaYSingleton().NOME_COLUNA_Y] = classe_otimizada
                 instancia._instancia_modificada = item
                 break
         return instancia

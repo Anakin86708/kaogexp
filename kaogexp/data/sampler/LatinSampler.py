@@ -6,7 +6,7 @@ import lhsmdu as lhsmdu
 import numpy as np
 import pandas as pd
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
 
 
@@ -64,7 +64,7 @@ class LatinSampler(SamplerAbstract):
         :rtype: pd.DataFrame
         """
         # Prepara os dados
-        interest_point = interest_point.copy().drop(NOME_COLUNA_Y, errors='ignore')
+        interest_point = interest_point.copy().drop(ColunaYSingleton().NOME_COLUNA_Y, errors='ignore')
         interest_point_np = self._sanitize(interest_point).to_numpy().astype(float)
 
         # Calcula a amostra e os valores para realizar a transformação

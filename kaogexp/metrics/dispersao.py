@@ -4,7 +4,7 @@ import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
 
 
@@ -38,8 +38,9 @@ class Dispersao():
         :rtype: int
         """
         return np.count_nonzero(
-            instancia.instancia_original.drop([NOME_COLUNA_Y]).to_numpy() != instancia.instancia_modificada.drop(
-                [NOME_COLUNA_Y]).to_numpy())
+            instancia.instancia_original.drop(
+                [ColunaYSingleton().NOME_COLUNA_Y]).to_numpy() != instancia.instancia_modificada.drop(
+                [ColunaYSingleton().NOME_COLUNA_Y]).to_numpy())
 
     @staticmethod
     def plot(dispersao: List[int]):
