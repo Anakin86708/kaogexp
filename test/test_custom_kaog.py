@@ -3,7 +3,7 @@ from unittest import TestCase, mock
 
 import pandas as pd
 
-from data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from explainer.kaog.custom_kaog import NovaDistancia
 from util import Data
 
@@ -19,7 +19,7 @@ class TestDistancias_(TestCase):
 
         adult = self.adult
         tratador = adult.tratador
-        colunas_encoded_drop = tratador.nomes_colunas_encoded.drop(NOME_COLUNA_Y)
+        colunas_encoded_drop = tratador.nomes_colunas_encoded.drop(ColunaYSingleton().NOME_COLUNA_Y)
         colunas_encoded = tratador.nomes_colunas_categoricas_encoded
         data = adult.x(True, False)
 

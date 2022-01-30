@@ -4,7 +4,7 @@ from typing import Tuple
 
 import pandas as pd
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from kaogexp.data.normalizer.NormalizerAbstract import NormalizerAbstract
 from kaogexp.data.normalizer.NormalizerFactory import NormalizerFactory
 from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
@@ -95,8 +95,8 @@ class DatasetAbstract(ABC):
         dataset = self._dataset.copy()
         self._validate_parameters(encoded, factorized)
         if normalizado:
-            ds_normalizado = self._normalizador.transform(dataset.drop(NOME_COLUNA_Y, axis=1))
-            dataset = ds_normalizado.join(dataset[NOME_COLUNA_Y])
+            ds_normalizado = self._normalizador.transform(dataset.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1))
+            dataset = ds_normalizado.join(dataset[ColunaYSingleton().NOME_COLUNA_Y])
         if encoded:
             dataset = self.tratador.encode(dataset)
         if factorized:
@@ -140,11 +140,11 @@ class DatasetAbstract(ABC):
         :type factorized: bool
         :return: O dataset sem `NOME_COLUNA_Y`.
         """
-        return self.dataset(normalizado, encoded, factorized).drop(NOME_COLUNA_Y, axis=1)
+        return self.dataset(normalizado, encoded, factorized).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
 
     def y(self) -> pd.Series:
         """Apenas `NOME_COLUNA_Y` do dataset."""
-        return self.dataset(False)[NOME_COLUNA_Y].copy()
+        return self.dataset(False)[ColunaYSingleton().NOME_COLUNA_Y].copy()
 
     @staticmethod
     def _strip_dataset(dataset: pd.DataFrame) -> pd.DataFrame:

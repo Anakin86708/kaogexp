@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from data.loader.DatasetFromMemory import DatasetFromMemory
 from data.sampler.LatinSampler import LatinSampler
 from explainer.KAOGExp import KAOGExp
@@ -18,7 +18,7 @@ class TestSparsityOptimization(TestCase):
     def test_optimize(self):
         adult = Data.create_new_instance_adult()
         data = adult.dataset(encoded=False)
-        input_ = data[data[NOME_COLUNA_Y] == 0].sample(1).iloc[0]
+        input_ = data[data[ColunaYSingleton().NOME_COLUNA_Y] == 0].sample(1).iloc[0]
         metodo = Counterfactual
         input_index = input_.name
         train_data = data.drop(input_index)
@@ -38,7 +38,7 @@ class TestSparsityOptimization(TestCase):
 
         print(resultado)
         self.assertEqual(counterfactual.classe_desejada, resultado.classe_desejada)
-        self.assertEqual(resultado.instancia_modificada[NOME_COLUNA_Y], resultado.classe_desejada)
+        self.assertEqual(resultado.instancia_modificada[ColunaYSingleton().NOME_COLUNA_Y], resultado.classe_desejada)
         self.assertEqual(classe_desejada, modelo.predict(resultado.instancia_modificada))
 
     @patch('metrics.dispersao.Dispersao.calcular')

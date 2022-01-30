@@ -4,7 +4,7 @@ from unittest import expectedFailure
 import numpy as np
 import pandas as pd
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from kaogexp.data.treatment.DatasetTreatment import DatasetTreatment
 from test.util import Data
 
@@ -78,8 +78,10 @@ class DatasetTreatmentTest(unittest.TestCase):
         # Tratar os dados
         encoded = instance.encode(dataset)
         pd.testing.assert_index_equal(instance.nomes_colunas_encoded, encoded.columns, check_order=False)
-        self.assertEqual(0, encoded.drop(NOME_COLUNA_Y, axis=1).select_dtypes(["O", "category"]).shape[1])
-        self.assertIn(NOME_COLUNA_Y, encoded.columns)
+        self.assertEqual(0,
+                         encoded.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1).select_dtypes(["O", "category"]).shape[
+                             1])
+        self.assertIn(ColunaYSingleton().NOME_COLUNA_Y, encoded.columns)
 
     def test_encode_adult_series(self):
         dataset, instance = self._prepare_adult()
@@ -107,7 +109,7 @@ class DatasetTreatmentTest(unittest.TestCase):
         encoded = dataset.dataset(encoded=True)
 
         pd.testing.assert_index_equal(dataset.tratador.nomes_colunas_encoded, encoded.columns, check_order=False)
-        self.assertIn(NOME_COLUNA_Y, encoded.columns)
+        self.assertIn(ColunaYSingleton().NOME_COLUNA_Y, encoded.columns)
         self.assertEqual(0, encoded.select_dtypes(["O", "category"]).shape[1])
 
     @expectedFailure
@@ -116,7 +118,7 @@ class DatasetTreatmentTest(unittest.TestCase):
         encoded = dataset.dataset(encoded=False)
 
         pd.testing.assert_index_equal(dataset.tratador.nomes_colunas_encoded, encoded.columns, check_order=False)
-        self.assertIn(NOME_COLUNA_Y, encoded.columns)
+        self.assertIn(ColunaYSingleton().NOME_COLUNA_Y, encoded.columns)
         self.assertEqual(0, encoded.select_dtypes(["O", "category"]).shape[1])
 
     def test_encode_expected_result(self):
@@ -174,7 +176,7 @@ class DatasetTreatmentTest(unittest.TestCase):
         dataset = Data.iris_dataset()
         instance = DatasetTreatment(dataset)
         # Coluna y deve ser ignorada
-        dataset = dataset.drop(NOME_COLUNA_Y, axis=1)
+        dataset = dataset.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         return dataset, instance
 
     def _prepare_adult(self, with_y=True):
@@ -182,7 +184,7 @@ class DatasetTreatmentTest(unittest.TestCase):
         instance = DatasetTreatment(dataset)
         if not with_y:
             # Coluna y deve ser ignorada
-            dataset = dataset.drop(NOME_COLUNA_Y, axis=1)
+            dataset = dataset.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         # Remover valores faltantes
         dataset = dataset.replace(("?",), np.nan).dropna()
         # Definir colunas categoricas

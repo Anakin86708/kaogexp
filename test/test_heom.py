@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from main.heom import MyHEOM
 from util import Data
 
@@ -21,7 +21,7 @@ class HEOMTest(unittest.TestCase):
         self.assertIsInstance(instance, MyHEOM)
 
     def test_distances(self):
-        data = self.data.copy().drop(NOME_COLUNA_Y, axis=1)
+        data = self.data.copy().drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         instance = MyHEOM(data, self.categoricos)
         num_cols = self.adult.nomes_colunas_numericas
 

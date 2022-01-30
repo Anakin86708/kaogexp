@@ -8,7 +8,7 @@ from unittest import expectedFailure
 import numpy as np
 import pandas as pd
 
-from kaogexp.data.loader import NOME_COLUNA_Y
+from data.loader import ColunaYSingleton
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from util import Data
 
@@ -104,7 +104,8 @@ class LatinSamplerTest(unittest.TestCase):
 
         is_inside_space = partial(self.is_inside_space, epsilon=self.EPSILON, interest_point=input_[colunas_numericas])
         self.assertTrue(is_inside_space(sample_num).all(), "Sample is not inside the space")
-        pd.testing.assert_index_equal(adult.tratador.nomes_colunas_originais.drop(NOME_COLUNA_Y), sample.columns)
+        pd.testing.assert_index_equal(adult.tratador.nomes_colunas_originais.drop(ColunaYSingleton().NOME_COLUNA_Y),
+                                      sample.columns)
         sample_ = sample.sample(1).iloc[0]
         pd.testing.assert_series_equal(input_[colunas_catetgorias], sample_[colunas_catetgorias], check_names=False)
 
