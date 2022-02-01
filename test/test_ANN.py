@@ -14,7 +14,7 @@ class TestANN(TestCase):
 
         self.assertIsInstance(result, RecursiveScriptModule)
 
-    def test_predict_one(self):
+    def test_predict_one_series(self):
         dataset = self._get_dateset()
         item = dataset.dataset(True, True).iloc[1]
         x = item.drop(ColunaYSingleton.NOME_COLUNA_Y)
@@ -25,7 +25,7 @@ class TestANN(TestCase):
 
         self.assertEqual(expected, result)
 
-    def test_predict_zero(self):
+    def test_predict_zero_series(self):
         dataset = self._get_dateset()
         item = dataset.dataset(True, True).iloc[2]
         x = item.drop(ColunaYSingleton.NOME_COLUNA_Y)
@@ -35,6 +35,30 @@ class TestANN(TestCase):
         result = instance.predict(x)
 
         self.assertEqual(expected, result)
+
+    def test_predict_one_dataframe(self):
+        dataset = self._get_dateset()
+        df = dataset.dataset(True, True)
+        df = df[df['income'] == 1].iloc[:2]
+        x = df.drop(ColunaYSingleton.NOME_COLUNA_Y, axis=1)
+        instance = ANN(dataset.tratador)
+        expected = df[ColunaYSingleton.NOME_COLUNA_Y]
+
+        result = instance.predict(x)
+
+        self.assertTrue((result == expected).all())
+
+    def test_predict_zero_dataframe(self):
+        dataset = self._get_dateset()
+        df = dataset.dataset(True, True)
+        df = df[df['income'] == 0].iloc[:2]
+        x = df.drop(ColunaYSingleton.NOME_COLUNA_Y, axis=1)
+        instance = ANN(dataset.tratador)
+        expected = df[ColunaYSingleton.NOME_COLUNA_Y]
+
+        result = instance.predict(x)
+
+        self.assertTrue((result == expected).all())
 
     def _get_dateset(self):
         index = ['age', 'workclass', 'fnlwgt', 'education-num', 'marital-status', 'occupation', 'relationship',
