@@ -8,9 +8,9 @@ import pandas as pd
 import requests
 import torch
 
-from data.treatment.TreatmentAbstract import TreatmentAbstract
 from kaogexp.data.loader import ColunaYSingleton
-from model.ModelAbstract import ModelAbstract
+from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
+from kaogexp.model.ModelAbstract import ModelAbstract
 
 
 class ANN(ModelAbstract):

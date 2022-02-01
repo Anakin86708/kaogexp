@@ -9,12 +9,12 @@ from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
 from kaogexp.metrics.CERScore import CERScore
+from kaogexp.metrics.carla_metrics import CARLADistances
 from kaogexp.metrics.dispersao import Dispersao
 from kaogexp.metrics.proximity import Proximity
 from kaogexp.metrics.validity import Validity
 from kaogexp.model.RandomForestModel import RandomForestModel
 from main.new_distance import NewDistance
-from metrics.carla_metrics import CARLADistances
 
 logging.basicConfig(level=logging.DEBUG)
 

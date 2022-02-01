@@ -8,7 +8,7 @@ from concurrent.futures.thread import ThreadPoolExecutor
 import pandas as pd
 
 from kaogexp.data.loader import ColunaYSingleton
-from model.ANN import ANN
+from kaogexp.model.ANN import ANN
 
 ColunaYSingleton().NOME_COLUNA_Y = 'SeriousDlqin2yrs'
 
@@ -17,11 +17,11 @@ from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
 from main.new_distance import NewDistance
-from metrics.CERScore import CERScore
-from metrics.carla_metrics import CARLADistances
-from metrics.dispersao import Dispersao
-from metrics.proximity import Proximity
-from metrics.validity import Validity
+from kaogexp.metrics.CERScore import CERScore
+from kaogexp.metrics.carla_metrics import CARLADistances
+from kaogexp.metrics.dispersao import Dispersao
+from kaogexp.metrics.proximity import Proximity
+from kaogexp.metrics.validity import Validity
 
 logging.basicConfig(level=logging.INFO)
 

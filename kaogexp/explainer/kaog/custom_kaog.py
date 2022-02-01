@@ -8,7 +8,7 @@ from kaog.distancias import Distancias
 from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
 
-from data.loader.DatasetAbstract import DatasetAbstract
+from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 
 
 class KAOGAdaptado(KAOG):

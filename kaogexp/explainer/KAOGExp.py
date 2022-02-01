@@ -1,19 +1,19 @@
 import logging
 import warnings
-from typing import Union, Type, Optional
+from typing import Union, Type, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from kaog import KAOG
 
-from data.loader.DatasetFromMemory import DatasetFromMemory
-from data.sampler.categorical_sampler import RandomCategoricalSampler
-from explainer.kaog.custom_kaog import KAOGAdaptado
-from explainer.otimizer import SparsityOptimization
 from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
+from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
+from kaogexp.data.sampler.categorical_sampler import RandomCategoricalSampler
+from kaogexp.explainer.kaog.custom_kaog import KAOGAdaptado
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
+from kaogexp.explainer.otimizer import SparsityOptimization
 from kaogexp.model.ModelAbstract import ModelAbstract
 
 warnings.filterwarnings('ignore', message=r'.*The feature names should match those.*', category=FutureWarning)
@@ -49,7 +49,7 @@ class KAOGExp:
                  instancia: Union[pd.Series, pd.DataFrame],
                  metodo: Type[MethodAbstract],
                  **kwargs,
-                 ) -> Union[tuple[Optional[MethodAbstract], ...], MethodAbstract, None]:
+                 ) -> Union[Tuple[Optional[MethodAbstract], ...], MethodAbstract, None]:
         """
         Tem como objetivo explicar `instancia`, utilizando um método definido por `metodo`.
         Para isso, primeiramente é necessário fazer a verificação se os dados condizem com o esperado pelo modelo.

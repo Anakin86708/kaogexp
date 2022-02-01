@@ -4,7 +4,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
-from data.treatment.TreatmentAbstract import TreatmentAbstract
+from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
 
 
 class ModelAbstract(ABC):
