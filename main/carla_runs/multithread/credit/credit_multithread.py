@@ -58,15 +58,18 @@ threads = []
 threads_num = multiprocessing.cpu_count()
 
 
-def explicar(item):
+def explicar(item, i, total):
+    logging.info('\n' + ('#' * 15) + f' Item {i + 1} of {total} ' + ('#' * 15) + '\n')
     explicador = KAOGExp(train_data, model, sampler, fixed_cols=fixed_cols, otimizar=True)
     return explicador.explicar(item, metodo=metodo, classe_desejada=classe_desejada,
                                tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
 
+test_dataset = test_data.dataset()
 with ThreadPoolExecutor(max_workers=threads_num) as executor:
-    for idx, row in test_data.dataset().iterrows():
-        threads.append(executor.submit(explicar, row))
+    total = len(test_dataset)
+    for i, (idx, row) in enumerate(test_dataset.iterrows()):
+        threads.append(executor.submit(explicar, row, i, total))
 
 explicacoes = tuple(map(lambda th: th.result(), threads))
 
