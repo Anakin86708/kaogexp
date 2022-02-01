@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from kaog import KAOG
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.normalizer.NormalizerAbstract import NormalizerAbstract
 from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract

@@ -4,7 +4,7 @@ from typing import Tuple
 
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.normalizer.NormalizerAbstract import NormalizerAbstract
 from kaogexp.data.normalizer.NormalizerFactory import NormalizerFactory
 from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract

@@ -6,11 +6,11 @@ import numpy as np
 import pandas as pd
 from kaog import KAOG
 
-from data.loader import ColunaYSingleton
 from data.loader.DatasetFromMemory import DatasetFromMemory
 from data.sampler.categorical_sampler import RandomCategoricalSampler
 from explainer.kaog.custom_kaog import KAOGAdaptado
 from explainer.otimizer import SparsityOptimization
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract

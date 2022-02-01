@@ -3,12 +3,16 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from main.heom import MyHEOM
 from util import Data
 
 
 class HEOMTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
 
     def setUp(self) -> None:
         self.adult = Data.create_new_instance_adult()

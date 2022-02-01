@@ -4,7 +4,8 @@ import logging
 
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
+from model.ANN import ANN
 
 ColunaYSingleton().NOME_COLUNA_Y = 'income'
 
@@ -12,7 +13,6 @@ from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
-from kaogexp.model.RandomForestModel import RandomForestModel
 from main.new_distance import NewDistance
 from metrics.CERScore import CERScore
 from metrics.carla_metrics import CARLADistances
@@ -36,7 +36,7 @@ test_data = DatasetFromMemory(test_data, index)
 # %%
 x = train_data.x(normalizado=True, encoded=True)
 y = train_data.y()
-model = RandomForestModel(x, y, train_data.tratador)
+model = ANN(train_data.tratador)
 
 # %%
 epsilon = 0.05
@@ -53,7 +53,7 @@ tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
 print('Realizando explicacao...')
-explicacoes = explicador.explicar(test_data.dataset(), metodo=metodo, classe_desejada=classe_desejada,
+explicacoes = explicador.explicar(test_data.dataset().sample(5), metodo=metodo, classe_desejada=classe_desejada,
                                   tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
 # %%

@@ -4,7 +4,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
 
 SUBSTITUTO_NA = np.nan

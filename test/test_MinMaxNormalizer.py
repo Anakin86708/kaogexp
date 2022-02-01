@@ -2,11 +2,16 @@ import unittest
 
 import pandas as pd
 
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.normalizer.MinMaxNormalizer import MinMaxNormalizer
 from test.util import Data
 
 
 class MinMaxNormalizerTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

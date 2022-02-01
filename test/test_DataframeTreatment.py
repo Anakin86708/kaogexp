@@ -4,12 +4,16 @@ from unittest import expectedFailure
 import numpy as np
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.treatment.DatasetTreatment import DatasetTreatment
 from test.util import Data
 
 
 class DatasetTreatmentTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
 
     def test_tratar_na_iris(self):
         dataset = Data.iris_dataset()
@@ -181,6 +185,7 @@ class DatasetTreatmentTest(unittest.TestCase):
 
     def _prepare_adult(self, with_y=True):
         dataset = self.adult_dataset.copy()
+        dataset.columns = dataset.columns.str.strip()
         instance = DatasetTreatment(dataset)
         if not with_y:
             # Coluna y deve ser ignorada

@@ -3,11 +3,16 @@ import unittest
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.model.RandomForestModel import RandomForestModel
 from util import Data
 
 
 class RandomForestModelTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
 
     def test_predict_dataset(self):
         model, x = self._prepare_data()
