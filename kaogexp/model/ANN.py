@@ -46,7 +46,9 @@ class ANN(ModelAbstract):
         else:
             raise RuntimeError(f'Model {name} not found.')
         # Download file if not present
-        path = join(os.path.dirname(__file__), 'models', f'{name}_ann.pt')
+        models_dir = join(os.path.dirname(__file__), 'models')
+        os.makedirs(models_dir, exist_ok=True)
+        path = join(models_dir, f'{name}_ann.pt')
         if not os.path.isfile(path):
             ANN.logger.info('Model ANN is not present. Downloading..')
             r = requests.get(url)
