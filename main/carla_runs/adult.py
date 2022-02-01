@@ -4,7 +4,7 @@ import logging
 
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from model.ANN import ANN
 
 ColunaYSingleton().NOME_COLUNA_Y = 'income'

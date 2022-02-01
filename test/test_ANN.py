@@ -3,12 +3,17 @@ from unittest import TestCase
 import pandas as pd
 from torch.jit import RecursiveScriptModule
 
-from data.loader import ColunaYSingleton
-from data.loader.DatasetFromMemory import DatasetFromMemory
-from model.ANN import ANN
+from kaogexp.data.loader import ColunaYSingleton
+from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
+from kaogexp.model.ANN import ANN
 
 
 class TestANN(TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'income'
+
     def test__retrieve_model(self):
         result = ANN._retrieve_model('adult')
 
@@ -70,3 +75,7 @@ class TestANN(TestCase):
         ColunaYSingleton.NOME_COLUNA_Y = 'income'
         dataset = DatasetFromMemory(data, cat_index)
         return dataset
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'

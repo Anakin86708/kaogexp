@@ -6,7 +6,7 @@ import lhsmdu as lhsmdu
 import numpy as np
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
 
 

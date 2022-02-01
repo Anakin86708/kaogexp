@@ -3,10 +3,15 @@ from unittest import expectedFailure
 
 import pandas as pd
 
+from kaogexp.data.loader import ColunaYSingleton
 from test.util import Data
 
 
 class DatasetFromMemoryTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
 
     def __init__(self, *args, **kwargs):
 

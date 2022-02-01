@@ -5,8 +5,8 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 
-from data.loader import ColunaYSingleton
 from data.treatment.TreatmentAbstract import TreatmentAbstract
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
 from kaogexp.model.ModelAbstract import ModelAbstract
 

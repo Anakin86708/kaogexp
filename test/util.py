@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn.datasets import load_iris
 
+from data.loader import ColunaYSingleton
 from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 
 
@@ -16,6 +17,7 @@ class Data:
     @staticmethod
     def create_new_instance_adult(tratar_na=True, num_sample=None):
         df = Data.adult_dataset()
+        ColunaYSingleton.NOME_COLUNA_Y = 'target'
 
         df['target'] = pd.Categorical(df['target'])
         df['target'].replace([' <=50K', ' >50K'], [0, 1], inplace=True)

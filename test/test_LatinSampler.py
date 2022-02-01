@@ -8,7 +8,7 @@ from unittest import expectedFailure
 import numpy as np
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from util import Data
 
@@ -16,6 +16,10 @@ from util import Data
 class LatinSamplerTest(unittest.TestCase):
     SEED = 42
     EPSILON = 0.05
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
