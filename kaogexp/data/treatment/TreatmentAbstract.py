@@ -4,7 +4,7 @@ from typing import Union
 
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 
 
 class TreatmentAbstract(ABC):

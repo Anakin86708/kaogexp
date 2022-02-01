@@ -1,19 +1,19 @@
 import logging
 import warnings
-from typing import Union, Type, Optional
+from typing import Union, Type, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 from kaog import KAOG
 
-from data.loader import ColunaYSingleton
-from data.loader.DatasetFromMemory import DatasetFromMemory
-from data.sampler.categorical_sampler import RandomCategoricalSampler
-from explainer.kaog.custom_kaog import KAOGAdaptado
-from explainer.otimizer import SparsityOptimization
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.loader.DatasetAbstract import DatasetAbstract
+from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.SamplerAbstract import SamplerAbstract
+from kaogexp.data.sampler.categorical_sampler import RandomCategoricalSampler
+from kaogexp.explainer.kaog.custom_kaog import KAOGAdaptado
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
+from kaogexp.explainer.otimizer import SparsityOptimization
 from kaogexp.model.ModelAbstract import ModelAbstract
 
 warnings.filterwarnings('ignore', message=r'.*The feature names should match those.*', category=FutureWarning)
@@ -22,6 +22,8 @@ warnings.filterwarnings('ignore', message=r'.*The feature names should match tho
 class KAOGExp:
     NUM_SAMPLES = 100
     LIMITE_EPSILON = 1
+
+    logger = logging.getLogger(__name__)
 
     def __init__(self, dataset: DatasetAbstract, modelo: ModelAbstract, sampler_numeric: SamplerAbstract,
                  fixed_cols: Optional[pd.Index] = None, otimizar: bool = True):
@@ -47,7 +49,7 @@ class KAOGExp:
                  instancia: Union[pd.Series, pd.DataFrame],
                  metodo: Type[MethodAbstract],
                  **kwargs,
-                 ) -> Union[tuple[Optional[MethodAbstract], ...], MethodAbstract, None]:
+                 ) -> Union[Tuple[Optional[MethodAbstract], ...], MethodAbstract, None]:
         """
         Tem como objetivo explicar `instancia`, utilizando um método definido por `metodo`.
         Para isso, primeiramente é necessário fazer a verificação se os dados condizem com o esperado pelo modelo.
@@ -92,24 +94,24 @@ class KAOGExp:
             while True:
                 amostragem, y_amostragem = self._obter_amostra_valida(classe_desejada, instancia)
 
-                logging.info(f'Amostragem válida encontrada. Realizando KAOG.')
+                self.logger.info(f'Amostragem válida encontrada. Realizando KAOG.')
                 amostragem_com_y = amostragem.copy()
                 amostragem_com_y[ColunaYSingleton().NOME_COLUNA_Y] = y_amostragem
                 amostra_completa = amostragem_com_y.append(instancia)
                 amostra_completa = self._realizar_amostragem_categorica(amostra_completa)
                 kaog = self._criar_kaog(amostra_completa)
-                logging.info(f'KAOG criado.')
+                self.logger.info(f'KAOG criado.')
                 try:
                     result = metodo(kaog, instancia, **kwargs)
                     if self._otimizar:
                         result = self._otimizador.optimize(result)
                     return result
                 except RuntimeError as e:
-                    logging.info(f'{e}\nContinuando amostragem...')
+                    self.logger.info(f'{e}\nContinuando amostragem...')
                     self._continuar_amostragem()
 
         except ValueError as e:
-            logging.error(f'Não foi possível encontrar uma amostra válida.\n{e}\n\n')
+            self.logger.error(f'Não foi possível encontrar uma amostra válida.\n{e}\n\n')
             return None
 
     def _obter_amostra_valida(self, classe_desejada: int, instancia: pd.Series):
@@ -187,7 +189,7 @@ class KAOGExp:
         :return: Amostragem ao redor do ponto de instância.
         :rtype: np.ndarray
         """
-        logging.info(f'Realizando amostragem com epsilon {self.sampler.epsilon}.')
+        self.logger.info(f'Realizando amostragem com epsilon {self.sampler.epsilon}.')
         if not isinstance(instancia, pd.Series):
             raise TypeError(f'`instancia` must be `pd.Series.` Got {type(instancia)}.')
         return self.sampler.realizar_amostragem(instancia, KAOGExp.NUM_SAMPLES)

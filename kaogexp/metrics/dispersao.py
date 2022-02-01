@@ -4,7 +4,7 @@ import numpy as np
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
 
 

@@ -4,8 +4,8 @@ from unittest import expectedFailure
 import pandas as pd
 from kaog import KAOG
 
-from data.loader import ColunaYSingleton
-from data.loader.DatasetFromMemory import DatasetFromMemory
+from kaogexp.data.loader import ColunaYSingleton
+from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
@@ -17,7 +17,12 @@ class KAOGExpTest(unittest.TestCase):
     EPSILON = 0.05
     QTD_AMOSTRAS = 10
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
+
     def setUp(self) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
         self.adult = Data.create_new_instance_adult()
         model = RandomForestModel.from_dataset(self.adult)
         sampler = LatinSampler(KAOGExpTest.EPSILON)

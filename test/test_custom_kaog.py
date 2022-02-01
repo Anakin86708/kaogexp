@@ -3,12 +3,16 @@ from unittest import TestCase, mock
 
 import pandas as pd
 
-from data.loader import ColunaYSingleton
-from explainer.kaog.custom_kaog import NovaDistancia
+from kaogexp.data.loader import ColunaYSingleton
+from kaogexp.explainer.kaog.custom_kaog import NovaDistancia
 from util import Data
 
 
 class TestDistancias_(TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
 
     def setUp(self) -> None:
         self.adult = Data.create_new_instance_adult(5)

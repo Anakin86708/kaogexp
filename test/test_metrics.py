@@ -4,7 +4,7 @@ from unittest import expectedFailure
 
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.metrics.CERScore import CERScore
 from kaogexp.metrics.dispersao import Dispersao
 from kaogexp.metrics.proximity import Proximity
@@ -24,6 +24,11 @@ class FakeCounterfactual:
 
 
 class ProximityTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
+
     def test_numeric(self):
         original = pd.Series({'a': 1, 'b': 0, 'c': 1, ColunaYSingleton().NOME_COLUNA_Y: 1})
         modificada = pd.Series({'a': 1, 'b': 1, 'c': 0, ColunaYSingleton().NOME_COLUNA_Y: 1})

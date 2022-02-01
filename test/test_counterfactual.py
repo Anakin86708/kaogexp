@@ -6,10 +6,15 @@ import pandas as pd
 from kaog import KAOG
 from sklearn.datasets import load_iris
 
+from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
 
 
 class CounterfactualTest(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
 
     def setUp(self) -> None:
         iris = load_iris()

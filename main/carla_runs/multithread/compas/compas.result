@@ -1,0 +1,17 @@
+Validade: [True]
+Proporção de validade: 1.000
+Dispersão: [1]
+Proximidade: [0.003329898773808522]
+Média:
+count    1.00000
+mean     0.00333
+std          NaN
+min      0.00333
+25%      0.00333
+50%      0.00333
+75%      0.00333
+max      0.00333
+dtype: float64
+CERScore: 0.003329898773808522
+Carla Distances:
+{'d1': 1, 'd2': 0.003329898773808522, 'd3': 1.1088225843811498e-05, 'd4': 0.003329898773808522}

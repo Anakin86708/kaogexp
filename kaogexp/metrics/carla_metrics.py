@@ -1,6 +1,6 @@
 import numpy as np
 
-from explainer.methods.Counterfactual import Counterfactual
+from kaogexp.explainer.methods.Counterfactual import Counterfactual
 
 
 class CARLADistances:

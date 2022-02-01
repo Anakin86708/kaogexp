@@ -3,18 +3,23 @@ from unittest.mock import Mock, patch
 
 import pandas as pd
 
-from data.loader import ColunaYSingleton
-from data.loader.DatasetFromMemory import DatasetFromMemory
-from data.sampler.LatinSampler import LatinSampler
-from explainer.KAOGExp import KAOGExp
-from explainer.methods.Counterfactual import Counterfactual
-from explainer.otimizer import SparsityOptimization
-from model.RandomForestModel import RandomForestModel
+from kaogexp.data.loader import ColunaYSingleton
+from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
+from kaogexp.data.sampler.LatinSampler import LatinSampler
+from kaogexp.explainer.KAOGExp import KAOGExp
+from kaogexp.explainer.methods.Counterfactual import Counterfactual
+from kaogexp.explainer.otimizer import SparsityOptimization
+from kaogexp.model.RandomForestModel import RandomForestModel
 from test_KAOGExp import KAOGExpTest
 from util import Data
 
 
 class TestSparsityOptimization(TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
+
     def test_optimize(self):
         adult = Data.create_new_instance_adult()
         data = adult.dataset(encoded=False)

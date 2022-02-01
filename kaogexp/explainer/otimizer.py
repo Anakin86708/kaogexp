@@ -4,11 +4,11 @@ from typing import List
 
 import pandas as pd
 
-from data.loader import ColunaYSingleton
-from explainer.methods.Counterfactual import Counterfactual
+from kaogexp.data.loader import ColunaYSingleton
+from kaogexp.explainer.methods.Counterfactual import Counterfactual
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
+from kaogexp.metrics.dispersao import Dispersao
 from kaogexp.model.ModelAbstract import ModelAbstract
-from metrics.dispersao import Dispersao
 
 
 class SparsityOptimization:

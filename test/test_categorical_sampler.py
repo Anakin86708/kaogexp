@@ -3,10 +3,15 @@ from unittest import TestCase
 
 import pandas as pd
 
-from data.sampler.categorical_sampler import RandomCategoricalSampler
+from kaogexp.data.loader import ColunaYSingleton
+from kaogexp.data.sampler.categorical_sampler import RandomCategoricalSampler
 
 
 class TestRandomCategoricalSampler(TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        ColunaYSingleton().NOME_COLUNA_Y = 'target'
 
     def setUp(self) -> None:
         self.data = pd.DataFrame(

@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from data.loader import ColunaYSingleton
+from kaogexp.data.loader import ColunaYSingleton
 from main.new_distance import NewDistance
 from util import Data
 
