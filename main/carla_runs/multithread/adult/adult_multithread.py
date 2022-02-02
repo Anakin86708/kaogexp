@@ -66,7 +66,9 @@ def explicar(item, i, total):
                                tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
 
-test_dataset = test_data.dataset()
+# Quantidade de instâncias que serão explicadas do conjunto de testes
+NUM_SAMPLE_DATASET = 100
+test_dataset = test_data.dataset().sample(NUM_SAMPLE_DATASET, random_state=seed)
 with ThreadPoolExecutor(max_workers=threads_num) as executor:
     total = len(test_dataset)
     for i, (idx, row) in enumerate(test_dataset.iterrows()):
