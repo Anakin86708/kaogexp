@@ -86,6 +86,7 @@ with open('credit.pkl', 'wb') as file:
 
 # %%
 # Métricas
+logging.info("Computando métricas")
 logging.basicConfig(level=logging.INFO)
 dist = NewDistance(test_data.dataset(), test_data.nomes_colunas_categoricas)
 logging.basicConfig(level=None)
@@ -113,6 +114,7 @@ with open('credit.result', 'w', encoding='utf8') as file:
     for d in carla_distances:
         file.write(str(d))
 
+logging.info("Fim")
 # %%
 # fig = Dispersao.plot(dispersao)
 # fig.show()
