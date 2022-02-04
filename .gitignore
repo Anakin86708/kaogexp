@@ -240,4 +240,4 @@ cython_debug/
 /docs/kaogexp.asta.lock
 *.patch
 /patchs/
-*.pkl
+**/*.pkl

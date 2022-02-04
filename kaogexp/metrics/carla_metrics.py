@@ -23,10 +23,12 @@ class CARLADistances:
 
     @staticmethod
     def _d2(delta):
+        """SAD"""
         return np.sum(np.abs(delta))
 
     @staticmethod
     def _d3(delta):
+        """SSD"""
         return np.sum(np.square(np.abs(delta)))
 
     @staticmethod
