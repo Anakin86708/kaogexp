@@ -1,6 +1,9 @@
 import os.path
 
 import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
+from pandas import Series
 
 work_dir = os.path.dirname(__file__)
 names = ['adult', 'compas', 'credit']
@@ -9,7 +12,7 @@ columns = ['Proporção de validade', 'CERScore', 'Média proximidade', 'Desvio 
            'Mínima proximidade', 'Máxima proximidade']
 
 
-def generate_stats(name) -> pd.Series:
+def generate_stats(name) -> tuple[Series, Series]:
     path = os.path.join(work_dir, name, name + '.result')
     carla_distances, cerscore, prop_validade, proximidade = get_values_from_file(path)
 
@@ -25,7 +28,7 @@ def generate_stats(name) -> pd.Series:
     results['Mínima proximidade'] = stats_proximidade['min']
     results['Máxima proximidade'] = stats_proximidade['max']
 
-    return results
+    return results, proximidade
 
 
 def get_values_from_file(path):
@@ -38,10 +41,10 @@ def get_values_from_file(path):
         prop_validade = eval(file.readline().replace('Proporção de validade: ', ''))
 
         # dispresão
-        dispersao = pd.Series(eval(file.readline().replace('Dispersão: ', '')))
+        dispersao = pd.Series(eval(file.readline().replace('Dispersão: ', '')), name=name)
 
         # proximidade
-        proximidade = pd.Series(eval(file.readline().replace('Proximidade: ', '')))
+        proximidade = pd.Series(eval(file.readline().replace('Proximidade: ', '')), name=name)
 
         for _ in range(10):
             file.readline()
@@ -57,7 +60,15 @@ def get_values_from_file(path):
 
 if __name__ == '__main__':
     df_results = pd.DataFrame(columns=columns)
+    proximidades = pd.DataFrame()
     for name in names:
-        df_results = df_results.append(generate_stats(name))
+        stats, proximidade = generate_stats(name)
+        df_results = df_results.append(stats)
+        proximidades[proximidade.name] = proximidade
 
     df_results.to_excel(os.path.join(work_dir, 'results.xls'))
+
+    # plots
+    fig = plt.Figure()
+    ax = sns.violinplot(data=proximidades, orient='h', cut=0)
+    plt.savefig('proximity.png')

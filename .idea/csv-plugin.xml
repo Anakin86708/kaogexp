@@ -178,13 +178,6 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\main\carla_runs\multithread\credit\credit_stats_carla.csv">
-          <value>
-            <Attribute>
-              <option name="separator" value="," />
-            </Attribute>
-          </value>
-        </entry>
       </map>
     </option>
   </component>
