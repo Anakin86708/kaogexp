@@ -12,9 +12,9 @@ columns = ['Proporção de validade', 'CERScore', 'Média proximidade', 'Desvio 
            'Mínima proximidade', 'Máxima proximidade']
 
 
-def generate_stats(name) -> tuple[Series, Series]:
+def generate_stats(name) -> tuple[Series, Series, Series]:
     path = os.path.join(work_dir, name, name + '.result')
-    carla_distances, cerscore, prop_validade, proximidade = get_values_from_file(path)
+    carla_distances, cerscore, prop_validade, proximidade, dispersao = get_values_from_file(path)
 
     df_stats_carla = pd.DataFrame(carla_distances).describe()
     df_stats_carla.to_excel(os.path.join(work_dir, name, name + '_stats_carla.xls'))
@@ -28,7 +28,7 @@ def generate_stats(name) -> tuple[Series, Series]:
     results['Mínima proximidade'] = stats_proximidade['min']
     results['Máxima proximidade'] = stats_proximidade['max']
 
-    return results, proximidade
+    return results, proximidade, dispersao
 
 
 def get_values_from_file(path):
@@ -55,16 +55,18 @@ def get_values_from_file(path):
         # carla distances
         file.readline()
         carla_distances = eval('[' + file.readline().replace('}', '}, ') + ']')
-    return carla_distances, cerscore, prop_validade, proximidade
+    return carla_distances, cerscore, prop_validade, proximidade, dispersao
 
 
 if __name__ == '__main__':
     df_results = pd.DataFrame(columns=columns)
     proximidades = pd.DataFrame()
+    dispersoes = pd.DataFrame()
     for name in names:
-        stats, proximidade = generate_stats(name)
+        stats, proximidade, dispersao = generate_stats(name)
         df_results = df_results.append(stats)
         proximidades[proximidade.name] = proximidade
+        dispersoes[dispersao.name] = dispersao
 
     df_results.to_excel(os.path.join(work_dir, 'results.xls'))
 
@@ -72,3 +74,8 @@ if __name__ == '__main__':
     fig = plt.Figure()
     ax = sns.violinplot(data=proximidades, orient='h', cut=0)
     plt.savefig('proximity.png')
+
+    min_ = dispersoes.min().min() - 1
+    max_ = dispersoes.max().max()
+    ax = sns.displot(data=dispersoes, multiple="dodge", binrange=(min_, max_))
+    plt.savefig('dispersion.png')
