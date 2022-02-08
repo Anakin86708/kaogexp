@@ -1,4 +1,5 @@
 import os.path
+from typing import Any
 
 import pandas as pd
 import seaborn as sns
@@ -12,7 +13,7 @@ columns = ['Proporção de validade', 'CERScore', 'Média proximidade', 'Desvio 
            'Mínima proximidade', 'Máxima proximidade']
 
 
-def generate_stats(name) -> tuple[Series, Series, Series]:
+def generate_stats(name) -> tuple[Series, Series, Series, Any]:
     path = os.path.join(work_dir, name, name + '.result')
     carla_distances, cerscore, prop_validade, proximidade, dispersao = get_values_from_file(path)
 
@@ -28,7 +29,7 @@ def generate_stats(name) -> tuple[Series, Series, Series]:
     results['Mínima proximidade'] = stats_proximidade['min']
     results['Máxima proximidade'] = stats_proximidade['max']
 
-    return results, proximidade, dispersao
+    return results, proximidade, dispersao, carla_distances
 
 
 def get_values_from_file(path):
@@ -62,20 +63,31 @@ if __name__ == '__main__':
     df_results = pd.DataFrame(columns=columns)
     proximidades = pd.DataFrame()
     dispersoes = pd.DataFrame()
+    distancias_carla = {}
     for name in names:
-        stats, proximidade, dispersao = generate_stats(name)
+        stats, proximidade, dispersao, dist_carla = generate_stats(name)
         df_results = df_results.append(stats)
         proximidades[proximidade.name] = proximidade
         dispersoes[dispersao.name] = dispersao
+        distancias_carla[name] = dist_carla
 
     df_results.to_excel(os.path.join(work_dir, 'results.xls'))
 
     # plots
-    fig = plt.Figure()
+    plt.clf()
     ax = sns.violinplot(data=proximidades, orient='h', cut=0)
     plt.savefig('proximity.png')
 
+    plt.clf()
     min_ = dispersoes.min().min() - 1
     max_ = dispersoes.max().max()
     ax = sns.displot(data=dispersoes, multiple="dodge", binrange=(min_, max_))
     plt.savefig('dispersion.png')
+    plt.clf()
+
+    path_join = os.path.join(work_dir, 'carla')
+    os.makedirs(path_join, exist_ok=True)
+    for name, data in distancias_carla.items():
+        ax = sns.violinplot(data=pd.DataFrame(data), orient='h', cut=0).set(title=name)
+        plt.savefig(os.path.join(path_join, f'{name}_carla_dist.png'))
+        plt.clf()
