@@ -1,21 +1,31 @@
 import os.path
-from typing import Any
 
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
-from pandas import Series
+from pandas import Series, DataFrame
 
 work_dir = os.path.dirname(__file__)
 names = ['adult', 'compas', 'credit']
+
+# Extracted from CARLA paper
+dimensions = {
+    'adult': 20,
+    'compas': 8,
+    'credit': 11
+}
 
 columns = ['Proporção de validade', 'CERScore', 'Média proximidade', 'Desvio padrão proximidade',
            'Mínima proximidade', 'Máxima proximidade']
 
 
-def generate_stats(name) -> tuple[Series, Series, Series, Any]:
+def generate_stats(name) -> tuple[Series, Series, Series, DataFrame]:
     path = os.path.join(work_dir, name, name + '.result')
     carla_distances, cerscore, prop_validade, proximidade, dispersao = get_values_from_file(path)
+
+    df_carla_distances = pd.DataFrame(carla_distances)
+
+    df_carla_distances = df_carla_distances.applymap(lambda x: x / 20)
 
     df_stats_carla = pd.DataFrame(carla_distances).describe()
     df_stats_carla.to_excel(os.path.join(work_dir, name, name + '_stats_carla.xls'))
@@ -29,7 +39,7 @@ def generate_stats(name) -> tuple[Series, Series, Series, Any]:
     results['Mínima proximidade'] = stats_proximidade['min']
     results['Máxima proximidade'] = stats_proximidade['max']
 
-    return results, proximidade, dispersao, carla_distances
+    return results, proximidade, dispersao, df_carla_distances
 
 
 def get_values_from_file(path):

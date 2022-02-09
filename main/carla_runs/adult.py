@@ -37,7 +37,6 @@ test_data = DatasetFromMemory(test_data, index)
 x = train_data.x(normalizado=True, encoded=True)
 y = train_data.y()
 model = ANN(train_data.tratador)
-
 # %%
 epsilon = 0.05
 limite_epsilon = 1.0

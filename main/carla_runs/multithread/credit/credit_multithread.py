@@ -53,6 +53,12 @@ classe_desejada = 1
 tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
+with open('credit_tratador.pkl', 'wb') as file:
+    pickle.dump(tratador_associado, file)
+
+with open('credit_normalizador.pkl', 'wb') as file:
+    pickle.dump(normalizador_associado, file)
+
 print('Realizando explicacao...')
 threads = []
 threads_num = multiprocessing.cpu_count()
