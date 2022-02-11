@@ -27,11 +27,11 @@ logging.basicConfig(level=logging.INFO)
 
 categorical_columns = ['c_charge_degree', 'race', 'sex']
 index = pd.Index(categorical_columns)
-train_data = pd.read_csv('../../../../data/carla_data/compas_train.csv', index_col=0)
+train_data = pd.read_csv('../../../data/carla_data/compas_train.csv', index_col=0)
 train_data.columns = train_data.columns.str.strip()
 train_data = DatasetFromMemory(train_data, index)
 
-test_data = pd.read_csv('../../../../data/carla_data/compas_test.csv', index_col=0)
+test_data = pd.read_csv('../../../data/carla_data/compas_test.csv', index_col=0)
 test_data.columns = test_data.columns.str.strip()
 test_data = DatasetFromMemory(test_data, index)
 
@@ -57,6 +57,12 @@ with open('compas_tratador.pkl', 'wb') as file:
     pickle.dump(tratador_associado, file)
 
 with open('compas_normalizador.pkl', 'wb') as file:
+    pickle.dump(normalizador_associado, file)
+
+with open('compas_tratador_lr.pkl', 'wb') as file:
+    pickle.dump(tratador_associado, file)
+
+with open('compas_normalizador_lr.pkl', 'wb') as file:
     pickle.dump(normalizador_associado, file)
 
 print('Realizando explicacao...')

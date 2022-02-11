@@ -10,7 +10,7 @@ import pandas as pd
 from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.model.ANN import ANN
 
-ColunaYSingleton().NOME_COLUNA_Y = 'SeriousDlqin2yrs'
+ColunaYSingleton().NOME_COLUNA_Y = 'income'
 
 from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.LatinSampler import LatinSampler
@@ -25,20 +25,21 @@ from kaogexp.metrics.validity import Validity
 
 logging.basicConfig(level=logging.INFO)
 
-categorical_columns = []
+categorical_columns = ['workclass', 'marital-status', 'occupation', 'relationship',
+                       'race', 'sex', 'native-country']
 index = pd.Index(categorical_columns)
-train_data = pd.read_csv('../../../../data/carla_data/give_me_some_credit_train.csv', index_col=0)
+train_data = pd.read_csv('../../../data/carla_data/adult_train.csv', index_col=0)
 train_data.columns = train_data.columns.str.strip()
 train_data = DatasetFromMemory(train_data, index)
 
-test_data = pd.read_csv('../../../../data/carla_data/give_me_some_credit_test.csv', index_col=0)
+test_data = pd.read_csv('../../../data/carla_data/adult_test.csv', index_col=0)
 test_data.columns = test_data.columns.str.strip()
 test_data = DatasetFromMemory(test_data, index)
 
 # %%
 x = train_data.x(normalizado=True, encoded=True)
 y = train_data.y()
-model = ANN(train_data.tratador, name='give_me_some_credit')
+model = ANN(train_data.tratador)
 
 # %%
 epsilon = 0.05
@@ -48,15 +49,15 @@ sampler = LatinSampler(epsilon=epsilon, seed=seed, limite_epsilon=limite_epsilon
 
 # %%
 metodo = Counterfactual
-fixed_cols = pd.Index(['age'])
+fixed_cols = pd.Index(['sex', 'age'])
 classe_desejada = 1
 tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
-with open('credit_tratador.pkl', 'wb') as file:
+with open('adult_tratador.pkl', 'wb') as file:
     pickle.dump(tratador_associado, file)
 
-with open('credit_normalizador.pkl', 'wb') as file:
+with open('adult_normalizador.pkl', 'wb') as file:
     pickle.dump(normalizador_associado, file)
 
 print('Realizando explicacao...')
@@ -82,7 +83,7 @@ with ThreadPoolExecutor(max_workers=threads_num) as executor:
 explicacoes = tuple(map(lambda th: th.result(), threads))
 
 # %%
-with open('credit.pkl', 'wb') as file:
+with open('adult.pkl', 'wb') as file:
     for item in explicacoes:
         try:
             pickle.dump(item, file)
@@ -94,7 +95,7 @@ with open('credit.pkl', 'wb') as file:
 # Métricas
 logging.info("Computando métricas")
 logging.basicConfig(level=logging.INFO)
-dist = NewDistance(test_data.dataset(), test_data.nomes_colunas_categoricas)
+dist = NewDistance(test_dataset, test_data.nomes_colunas_categoricas)
 logging.basicConfig(level=None)
 prox = Proximity(dist.calculate)
 cers = CERScore(dist.calculate)
@@ -109,7 +110,7 @@ for item in explicacoes:
     carla_distances.append(CARLADistances.calcular(item))
 cerscore = cers.calcular(explicacoes, proximidades)
 
-with open('credit.result', 'w', encoding='utf8') as file:
+with open('adult.result', 'w', encoding='utf8') as file:
     file.write(f'Validade: {validades}\n')
     file.write(f'Proporção de validade: %.3f\n' % (validades.count(True) / len(validades)))
     file.write(f'Dispersão: {dispersao}\n')
