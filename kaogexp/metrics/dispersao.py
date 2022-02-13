@@ -39,8 +39,8 @@ class Dispersao():
         """
         return np.count_nonzero(
             instancia.instancia_original.drop(
-                [ColunaYSingleton().NOME_COLUNA_Y]).to_numpy() != instancia.instancia_modificada.drop(
-                [ColunaYSingleton().NOME_COLUNA_Y]).to_numpy())
+                [ColunaYSingleton().NOME_COLUNA_Y], errors='ignore').to_numpy() != instancia.instancia_modificada.drop(
+                [ColunaYSingleton().NOME_COLUNA_Y], errors='ignore').to_numpy())
 
     @staticmethod
     def plot(dispersao: List[int]):
