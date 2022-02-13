@@ -1,6 +1,7 @@
 import logging
 import os.path
 import re
+from typing import Dict
 
 import pandas as pd
 
@@ -15,9 +16,9 @@ distances_cols = ['Distance_1', 'Distance_2', 'Distance_3', 'Distance_4']
 logger = logging.getLogger()
 
 
-def main():
+def main() -> Dict[str, pd.DataFrame]:
     # Load metrics results from KAOGExp
-    metric_kaogexp_path = os.path.join(working_dir, '..', 'carla_runs', 'results.xls')
+    metric_kaogexp_path = os.path.join(working_dir, '..', 'carla_runs', 'results.xlsx')
     metrics_kaogexp = pd.read_excel(metric_kaogexp_path, index_col=0)
     metrics_kaogexp.rename(index={'credit': 'give-me-some-credit'}, inplace=True)
 
@@ -55,7 +56,8 @@ def main():
         df = pd.DataFrame()
 
         # KAOGExp data
-        kaogexp_data_ = metrics_kaogexp.loc[dataset][['Proporção de validade', 'CERScore']]
+        kaogexp_data_ = metrics_kaogexp.loc[dataset][
+            ['Proporção de validade'] + ['CERScore_Distance_' + str(i) for i in range(1, 5)]]
         kaogexp_data_.name = 'KAOGExp'
         df = df.append(kaogexp_data_)
         df.rename(columns={'Proporção de validade': 'Success_Rate'}, inplace=True)
@@ -110,3 +112,7 @@ def get_computed_metrics():
 
 if __name__ == '__main__':
     results = main()
+    tables_dir = os.path.join(working_dir, 'tables')
+    os.makedirs(tables_dir, exist_ok=True)
+    for name, df in results.items():
+        df.to_excel(os.path.join(tables_dir, f'{name}.xlsx'))

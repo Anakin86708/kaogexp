@@ -14,8 +14,7 @@ work_dir = os.path.dirname(__file__)
 names = ['adult', 'compas', 'credit']
 
 columns = ['Proporção de validade', 'CERScore_custom_distance', 'CERScore_Distance_1', 'CERScore_Distance_2',
-           'CERScore_Distance_3', 'CERScore_Distance_4', 'Média proximidade', 'Desvio padrão proximidade',
-           'Mínima proximidade', 'Máxima proximidade']
+           'CERScore_Distance_3', 'CERScore_Distance_4']
 
 
 def generate_stats(name) -> tuple[Series, Series, Series, DataFrame]:
@@ -27,15 +26,10 @@ def generate_stats(name) -> tuple[Series, Series, Series, DataFrame]:
     df_carla_distances = df_carla_distances.applymap(lambda x: x / 20)
 
     df_stats_carla = pd.DataFrame(carla_distances).describe()
-    df_stats_carla.to_excel(os.path.join(work_dir, name, name + '_stats_carla.xls'))
+    df_stats_carla.to_excel(os.path.join(work_dir, name, name + '_stats_carla.xlsx'))
 
-    stats_proximidade = proximidade.describe()
     results = pd.Series({f'CERScore_{k}': v for k, v in cerscore.items()}, name=name, index=columns, dtype=float)
     results['Proporção de validade'] = prop_validade
-    results['Média proximidade'] = stats_proximidade['mean']
-    results['Desvio padrão proximidade'] = stats_proximidade['std']
-    results['Mínima proximidade'] = stats_proximidade['min']
-    results['Máxima proximidade'] = stats_proximidade['max']
 
     return results, proximidade, dispersao, df_carla_distances
 
@@ -69,7 +63,7 @@ if __name__ == '__main__':
             logger.error(f'Unable to find results file for {name}')
             continue
 
-    df_results.to_excel(os.path.join(work_dir, 'results.xls'))
+    df_results.to_excel(os.path.join(work_dir, 'results.xlsx'))
 
     # plots
     plt.clf()

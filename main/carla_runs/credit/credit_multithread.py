@@ -126,7 +126,7 @@ metricas_dict = {
         'proximidades': proximidades
     },
     'cerscore': {
-        'new_distance': cerscore,
+        'custom_distance': cerscore,
         **cerscore_carla
     },
     'carla_distances': carla_distances,

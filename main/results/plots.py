@@ -1,4 +1,5 @@
 # Realiza o plot para comparação entre os métodos no CARLA e o KAOGExp
+import json
 import os.path
 
 import pandas as pd
@@ -40,9 +41,10 @@ for filename in files:
 
     # Get result for KAOGExp based on dataset
     dataset_ = dataset if dataset != 'give-me-some-credit' else 'credit'
-    file_result_kaogexp = os.path.join(dir_kaogexp_results, dataset_, f'{dataset_}.result')
+    file_result_kaogexp = os.path.join(dir_kaogexp_results, dataset_, f'metricas_{dataset_}.json')
     with open(file_result_kaogexp, 'r') as file:
-        distancias_kaogexp = pd.DataFrame(eval('[' + file.readlines()[16:][0].replace('}', '}, ') + ']'))
+        json_kaogexp = json.load(file)
+        distancias_kaogexp = pd.DataFrame(json_kaogexp['carla_distances'])
         treat_data1, dropped_kaogexp = treat_data(distancias_kaogexp, dataset)
         treat_data1.columns = cols_dist
         kaogexp_dists[dataset] = treat_data1
