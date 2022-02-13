@@ -1,7 +1,10 @@
 # %%
 # Carregar o adult dataset
+import json
 import logging
 import multiprocessing
+import operator
+import os
 import pickle
 from concurrent.futures.thread import ThreadPoolExecutor
 
@@ -9,9 +12,11 @@ import pandas as pd
 
 from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.model.ANN import ANN
+from main.carla_runs.util import save_tratador_and_normalizador
 
 ColunaYSingleton().NOME_COLUNA_Y = 'SeriousDlqin2yrs'
 
+name = 'credit'
 from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
@@ -53,17 +58,8 @@ classe_desejada = 1
 tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
-with open('credit_tratador.pkl', 'wb') as file:
-    pickle.dump(tratador_associado, file)
-
-with open('credit_normalizador.pkl', 'wb') as file:
-    pickle.dump(normalizador_associado, file)
-
-with open('credit_adult_tratador_lr.pkl', 'wb') as file:
-    pickle.dump(tratador_associado, file)
-
-with open('credit_normalizador_lr.pkl', 'wb') as file:
-    pickle.dump(normalizador_associado, file)
+working_dir = os.path.dirname(__file__)
+save_tratador_and_normalizador(working_dir, name, tratador_associado, normalizador_associado)
 
 print('Realizando explicacao...')
 threads = []
@@ -88,11 +84,10 @@ with ThreadPoolExecutor(max_workers=threads_num) as executor:
 explicacoes = tuple(map(lambda th: th.result(), threads))
 
 # %%
-with open('credit.pkl', 'wb') as file:
+with open(os.path.join('pkls', f'{name}.pkl'), 'wb') as file:
     for item in explicacoes:
         try:
             pickle.dump(item, file)
-            print(item)
         except AttributeError:
             print('Empty')
 
@@ -115,16 +110,30 @@ for item in explicacoes:
     carla_distances.append(CARLADistances.calcular(item))
 cerscore = cers.calcular(explicacoes, proximidades)
 
-with open('credit.result', 'w', encoding='utf8') as file:
-    file.write(f'Validade: {validades}\n')
-    file.write(f'Proporção de validade: %.3f\n' % (validades.count(True) / len(validades)))
-    file.write(f'Dispersão: {dispersao}\n')
-    file.write(f'Proximidade: {proximidades}\n')
-    file.write(f'Média:\n{pd.Series(proximidades).describe()}\n')
-    file.write(f'CERScore: {cerscore}\n')
-    file.write(f'Carla Distances:\n')
-    for d in carla_distances:
-        file.write(str(d))
+# Unir todas as distancias de mesma métrica
+cerscore_carla = {}
+for distance in carla_distances[0].keys():
+    op = operator.itemgetter(distance)
+    cerscore_carla[distance] = cers.calcular(explicacoes, list(map(op, carla_distances)))
+
+metricas_dict = {
+    'validade': {
+        'proporcao_validade': (validades.count(True) / len(validades)),
+    },
+    'dispersao': dispersao,
+    'proximidade': {
+        'media_proximidade': pd.Series(proximidades).describe().to_dict(),
+        'proximidades': proximidades
+    },
+    'cerscore': {
+        'new_distance': cerscore,
+        **cerscore_carla
+    },
+    'carla_distances': carla_distances,
+}
+
+with open(f'metricas_{name}.json', 'w') as f:
+    json.dump(metricas_dict, f, indent=4)
 
 logging.info("Fim")
 # %%

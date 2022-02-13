@@ -178,6 +178,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\main\results\dropped\cchvae_give-me-some-credit_dropped.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

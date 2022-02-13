@@ -132,7 +132,7 @@ class ANN(ModelAbstract):
             x = x[self.feature_order[self.dataset_name]]
             tensor = self._get_tensor(x)
             return self.raw_model(tensor)[:, 1].reshape((-1, 1)).round().detach().numpy().reshape(1, -1)[0]
-        except ValueError:
+        except (ValueError, KeyError):
             self.logger.debug('Applying treatment to dataframe.')
             return self._predict_dataframe(self.tratador.encode(x))
 

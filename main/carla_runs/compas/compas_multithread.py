@@ -1,7 +1,10 @@
 # %%
 # Carregar o adult dataset
+import json
 import logging
 import multiprocessing
+import operator
+import os
 import pickle
 from concurrent.futures.thread import ThreadPoolExecutor
 
@@ -9,6 +12,7 @@ import pandas as pd
 
 from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.model.ANN import ANN
+from main.carla_runs.util import save_tratador_and_normalizador
 
 ColunaYSingleton().NOME_COLUNA_Y = 'score'
 
@@ -25,6 +29,7 @@ from kaogexp.metrics.validity import Validity
 
 logging.basicConfig(level=logging.INFO)
 
+name = 'compas'
 categorical_columns = ['c_charge_degree', 'race', 'sex']
 index = pd.Index(categorical_columns)
 train_data = pd.read_csv('../../../data/carla_data/compas_train.csv', index_col=0)
@@ -38,7 +43,7 @@ test_data = DatasetFromMemory(test_data, index)
 # %%
 x = train_data.x(normalizado=True, encoded=True)
 y = train_data.y()
-model = ANN(train_data.tratador, name='compas')
+model = ANN(train_data.tratador, name=name)
 
 # %%
 epsilon = 0.05
@@ -53,17 +58,8 @@ classe_desejada = 1
 tratador_associado = train_data.tratador
 normalizador_associado = train_data.normalizador
 
-with open('compas_tratador.pkl', 'wb') as file:
-    pickle.dump(tratador_associado, file)
-
-with open('compas_normalizador.pkl', 'wb') as file:
-    pickle.dump(normalizador_associado, file)
-
-with open('compas_tratador_lr.pkl', 'wb') as file:
-    pickle.dump(tratador_associado, file)
-
-with open('compas_normalizador_lr.pkl', 'wb') as file:
-    pickle.dump(normalizador_associado, file)
+working_dir = os.path.dirname(__file__)
+save_tratador_and_normalizador(working_dir, name, tratador_associado, normalizador_associado)
 
 print('Realizando explicacao...')
 threads = []
@@ -88,11 +84,10 @@ with ThreadPoolExecutor(max_workers=threads_num) as executor:
 explicacoes = tuple(map(lambda th: th.result(), threads))
 
 # %%
-with open('compas.pkl', 'wb') as file:
+with open(os.path.join('pkls', f'{name}.pkl'), 'wb') as file:
     for item in explicacoes:
         try:
             pickle.dump(item, file)
-            print(item)
         except AttributeError:
             print('Empty')
 
@@ -112,19 +107,37 @@ for item in explicacoes:
     validades.append(Validity.calcular(item))
     dispersao.append(Dispersao.calcular(item))
     proximidades.append(prox.calcular(item))
-    carla_distances.append(CARLADistances.calcular(item))
+    try:
+        carla_distances.append(CARLADistances.calcular(item))
+    except AttributeError:
+        pass
+
 cerscore = cers.calcular(explicacoes, proximidades)
 
-with open('compas.result', 'w', encoding='utf8') as file:
-    file.write(f'Validade: {validades}\n')
-    file.write(f'Proporção de validade: %.3f\n' % (validades.count(True) / len(validades)))
-    file.write(f'Dispersão: {dispersao}\n')
-    file.write(f'Proximidade: {proximidades}\n')
-    file.write(f'Média:\n{pd.Series(proximidades).describe()}\n')
-    file.write(f'CERScore: {cerscore}\n')
-    file.write(f'Carla Distances:\n')
-    for d in carla_distances:
-        file.write(str(d))
+# Unir todas as distancias de mesma métrica
+cerscore_carla = {}
+for distance in carla_distances[0].keys():
+    op = operator.itemgetter(distance)
+    cerscore_carla[distance] = cers.calcular(explicacoes, list(map(op, carla_distances)))
+
+metricas_dict = {
+    'validade': {
+        'proporcao_validade': (validades.count(True) / len(validades)),
+    },
+    'dispersao': dispersao,
+    'proximidade': {
+        'media_proximidade': pd.Series(proximidades).describe().to_dict(),
+        'proximidades': proximidades
+    },
+    'cerscore': {
+        'new_distance': cerscore,
+        **cerscore_carla
+    },
+    'carla_distances': carla_distances,
+}
+
+with open(f'metricas_{name}.json', 'w') as f:
+    json.dump(metricas_dict, f, indent=4)
 
 logging.info("Fim")
 # %%

@@ -1,3 +1,6 @@
+# Create graph for dispersion and proximity
+import json
+import logging
 import os.path
 
 import pandas as pd
@@ -5,22 +8,18 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from pandas import Series, DataFrame
 
+logger = logging.getLogger()
+
 work_dir = os.path.dirname(__file__)
 names = ['adult', 'compas', 'credit']
 
-# Extracted from CARLA paper
-dimensions = {
-    'adult': 20,
-    'compas': 8,
-    'credit': 11
-}
-
-columns = ['Proporção de validade', 'CERScore', 'Média proximidade', 'Desvio padrão proximidade',
+columns = ['Proporção de validade', 'CERScore_custom_distance', 'CERScore_Distance_1', 'CERScore_Distance_2',
+           'CERScore_Distance_3', 'CERScore_Distance_4', 'Média proximidade', 'Desvio padrão proximidade',
            'Mínima proximidade', 'Máxima proximidade']
 
 
 def generate_stats(name) -> tuple[Series, Series, Series, DataFrame]:
-    path = os.path.join(work_dir, name, name + '.result')
+    path = os.path.join(work_dir, name, f'metricas_{name}.json')
     carla_distances, cerscore, prop_validade, proximidade, dispersao = get_values_from_file(path)
 
     df_carla_distances = pd.DataFrame(carla_distances)
@@ -31,9 +30,8 @@ def generate_stats(name) -> tuple[Series, Series, Series, DataFrame]:
     df_stats_carla.to_excel(os.path.join(work_dir, name, name + '_stats_carla.xls'))
 
     stats_proximidade = proximidade.describe()
-    results = pd.Series(name=name, index=columns, dtype=float)
+    results = pd.Series({f'CERScore_{k}': v for k, v in cerscore.items()}, name=name, index=columns, dtype=float)
     results['Proporção de validade'] = prop_validade
-    results['CERScore'] = cerscore
     results['Média proximidade'] = stats_proximidade['mean']
     results['Desvio padrão proximidade'] = stats_proximidade['std']
     results['Mínima proximidade'] = stats_proximidade['min']
@@ -43,29 +41,15 @@ def generate_stats(name) -> tuple[Series, Series, Series, DataFrame]:
 
 
 def get_values_from_file(path):
-    with open(path, 'r', encoding='UTF-8') as file:
-        line = file.readline()
-        # validade
-        validade = eval(line.replace('Validade: ', ''))
+    with open(path, 'r') as file:
+        metricas = json.load(file)
 
-        # proporção validade
-        prop_validade = eval(file.readline().replace('Proporção de validade: ', ''))
+    carla_distances = metricas['carla_distances']
+    cerscore = metricas['cerscore']
+    prop_validade = metricas['validade']['proporcao_validade']
+    proximidade = pd.Series(metricas['proximidade']['proximidades'], name=name)
+    dispersao = pd.Series(metricas['dispersao'], name=name)
 
-        # dispresão
-        dispersao = pd.Series(eval(file.readline().replace('Dispersão: ', '')), name=name)
-
-        # proximidade
-        proximidade = pd.Series(eval(file.readline().replace('Proximidade: ', '')), name=name)
-
-        for _ in range(10):
-            file.readline()
-
-        # CERScore
-        cerscore = eval(file.readline().replace('CERScore: ', ''))
-
-        # carla distances
-        file.readline()
-        carla_distances = eval('[' + file.readline().replace('}', '}, ') + ']')
     return carla_distances, cerscore, prop_validade, proximidade, dispersao
 
 
@@ -75,11 +59,15 @@ if __name__ == '__main__':
     dispersoes = pd.DataFrame()
     distancias_carla = {}
     for name in names:
-        stats, proximidade, dispersao, dist_carla = generate_stats(name)
-        df_results = df_results.append(stats)
-        proximidades[proximidade.name] = proximidade
-        dispersoes[dispersao.name] = dispersao
-        distancias_carla[name] = dist_carla
+        try:
+            stats, proximidade, dispersao, dist_carla = generate_stats(name)
+            df_results = df_results.append(stats)
+            proximidades[proximidade.name] = proximidade
+            dispersoes[dispersao.name] = dispersao
+            distancias_carla[name] = dist_carla
+        except FileNotFoundError:
+            logger.error(f'Unable to find results file for {name}')
+            continue
 
     df_results.to_excel(os.path.join(work_dir, 'results.xls'))
 
