@@ -26,7 +26,7 @@ dimensions = {
 }
 
 
-def treat_data(df, dataset):
+def treat_data(df: pd.DataFrame, dataset: str):
     df = df.applymap(lambda x: x / dimensions[dataset])
     df_dropped = df.T.where(df.T > 1).dropna().T
     df_ = df.T.where(df.T <= 1).dropna().T
@@ -39,12 +39,15 @@ kaogexp_dists = {}
 for filename in files:
     method, dataset = filename.replace('.csv', '').split('_', 1)
 
+    if method in ('revise'):
+        continue
+
     # Get result for KAOGExp based on dataset
     dataset_ = dataset if dataset != 'give-me-some-credit' else 'credit'
     file_result_kaogexp = os.path.join(dir_kaogexp_results, dataset_, f'metricas_{dataset_}.json')
     with open(file_result_kaogexp, 'r') as file:
         json_kaogexp = json.load(file)
-        distancias_kaogexp = list(filter(lambda x: x is not None, json_kaogexp['carla_distances']))
+        distancias_kaogexp = pd.DataFrame(list(filter(lambda x: x is not None, json_kaogexp['carla_distances'])))
         treat_data1, dropped_kaogexp = treat_data(distancias_kaogexp, dataset)
         treat_data1.columns = cols_dist
         kaogexp_dists[dataset] = treat_data1

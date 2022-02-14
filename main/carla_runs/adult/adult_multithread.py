@@ -1,18 +1,15 @@
 # %%
 # Carregar o adult dataset
-import json
 import logging
 import multiprocessing
-import operator
 import os.path
-import pickle
 from concurrent.futures.thread import ThreadPoolExecutor
 
 import pandas as pd
 
 from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.model.ANN import ANN
-from main.carla_runs.util import save_tratador_and_normalizador
+from main.carla_runs.util import save_tratador_and_normalizador, compute_and_save_metrics, save_counterfactuals
 
 ColunaYSingleton().NOME_COLUNA_Y = 'income'
 
@@ -20,12 +17,6 @@ from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
-from main.new_distance import NewDistance
-from kaogexp.metrics.CERScore import CERScore
-from kaogexp.metrics.carla_metrics import CARLADistances
-from kaogexp.metrics.dispersao import Dispersao
-from kaogexp.metrics.proximity import Proximity
-from kaogexp.metrics.validity import Validity
 
 logging.basicConfig(level=logging.INFO)
 
@@ -85,62 +76,13 @@ with ThreadPoolExecutor(max_workers=threads_num) as executor:
 explicacoes = tuple(map(lambda th: th.result(), threads))
 
 # %%
-with open(os.path.join('pkls', f'{name}.pkl'), 'wb') as file:
-    for item in explicacoes:
-        try:
-            pickle.dump(item, file)
-        except AttributeError:
-            print('Empty')
+save_counterfactuals(name, working_dir, explicacoes)
 
 # %%
 # Métricas
-logging.info("Computando métricas")
-logging.basicConfig(level=logging.INFO)
-dist = NewDistance(test_dataset, test_data.nomes_colunas_categoricas)
-logging.basicConfig(level=None)
-prox = Proximity(dist.calculate)
-cers = CERScore(dist.calculate)
-validades = []
-dispersao = []
-proximidades = []
-carla_distances = []
-for item in explicacoes:
-    validades.append(Validity.calcular(item))
-    dispersao.append(Dispersao.calcular(item))
-    proximidades.append(prox.calcular(item))
-    carla_distances.append(CARLADistances.calcular(item))
-cerscore = cers.calcular(explicacoes, proximidades)
-
-# Unir todas as distancias de mesma métrica
-cerscore_carla = {}
-for distance in carla_distances[0].keys():
-    op = operator.itemgetter(distance)
-    cerscore_carla[distance] = cers.calcular(explicacoes, list(map(op, carla_distances)))
-
-metricas_dict = {
-    'validade': {
-        'proporcao_validade': (validades.count(True) / len(validades)),
-    },
-    'dispersao': dispersao,
-    'proximidade': {
-        'media_proximidade': pd.Series(proximidades).describe().to_dict(),
-        'proximidades': proximidades
-    },
-    'cerscore': {
-        'custom_distance': cerscore,
-        **cerscore_carla
-    },
-    'carla_distances': carla_distances,
-}
-
-with open(f'metricas_{name}.json', 'w') as f:
-    json.dump(metricas_dict, f, indent=4)
+compute_and_save_metrics(name, working_dir, test_dataset, test_data, explicacoes)
 
 logging.info("Fim")
-# %%
-# fig = Dispersao.plot(dispersao)
-# fig.show()
-
 # %%
 # Verificar se está tendo alterações em dados categóricos
 cat_cols = test_data.nomes_colunas_categoricas
