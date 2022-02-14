@@ -68,7 +68,7 @@ threads_num = multiprocessing.cpu_count()
 
 def explicar(item, i, total):
     logging.info('\n' + ('#' * 15) + f' Item {i + 1} of {total} ' + ('#' * 15) + '\n')
-    explicador = KAOGExp(train_data, model, sampler, fixed_cols=fixed_cols, otimizar=True)
+    explicador = KAOGExp(train_data, model, sampler, fixed_cols=fixed_cols, otimizar=False)
     return explicador.explicar(item, metodo=metodo, classe_desejada=classe_desejada,
                                tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
@@ -84,12 +84,14 @@ with ThreadPoolExecutor(max_workers=threads_num) as executor:
 explicacoes = tuple(map(lambda th: th.result(), threads))
 
 # %%
+logging.info("Salvando counterfactuals")
 with open(os.path.join('pkls', f'{name}.pkl'), 'wb') as file:
     for item in explicacoes:
         try:
             pickle.dump(item, file)
         except AttributeError:
             print('Empty')
+logging.info("Salvo com sucesso")
 
 # %%
 # Métricas
@@ -114,7 +116,8 @@ cerscore = cers.calcular(explicacoes, proximidades)
 cerscore_carla = {}
 for distance in carla_distances[0].keys():
     op = operator.itemgetter(distance)
-    cerscore_carla[distance] = cers.calcular(explicacoes, list(map(op, carla_distances)))
+    cerscore_carla[distance] = cers.calcular(explicacoes,
+                                             list(map(op, list(filter(lambda x: x is not None, carla_distances)))))
 
 metricas_dict = {
     'validade': {
