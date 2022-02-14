@@ -37,3 +37,11 @@ class ModelAbstract(ABC):
         :rtype: Union[int, np.ndarray]
         """
         raise NotImplementedError
+
+    def prob(self, x: Union[pd.Series, pd.DataFrame]) -> Union[int, np.ndarray]:
+        """
+        Probabilidade para a predição. Não precisa ser implementado por todos os métodos.
+        :param x:
+        :return:
+        """
+        raise NotImplementedError

@@ -44,7 +44,7 @@ for filename in files:
     file_result_kaogexp = os.path.join(dir_kaogexp_results, dataset_, f'metricas_{dataset_}.json')
     with open(file_result_kaogexp, 'r') as file:
         json_kaogexp = json.load(file)
-        distancias_kaogexp = pd.DataFrame(json_kaogexp['carla_distances'])
+        distancias_kaogexp = list(filter(lambda x: x is not None, json_kaogexp['carla_distances']))
         treat_data1, dropped_kaogexp = treat_data(distancias_kaogexp, dataset)
         treat_data1.columns = cols_dist
         kaogexp_dists[dataset] = treat_data1

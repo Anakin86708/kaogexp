@@ -44,7 +44,7 @@ def get_values_from_file(path):
     proximidade = pd.Series(metricas['proximidade']['proximidades'], name=name)
     dispersao = pd.Series(metricas['dispersao'], name=name)
 
-    return carla_distances, cerscore, prop_validade, proximidade, dispersao
+    return list(filter(lambda x: x is not None, carla_distances)), cerscore, prop_validade, proximidade, dispersao
 
 
 if __name__ == '__main__':

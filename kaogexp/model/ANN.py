@@ -127,9 +127,18 @@ class ANN(ModelAbstract):
             return self._predict_dataframe(x)
         raise RuntimeError('x must be a pandas.Series or pandas.DataFrame')
 
+    def prob(self, x: Union[pd.Series, pd.DataFrame]) -> Union[int, np.ndarray]:
+        x = x.copy()
+        if isinstance(x, pd.Series):
+            x = x.drop(ColunaYSingleton().NOME_COLUNA_Y, errors='ignore')
+            return self._prob_series(x)
+        elif isinstance(x, pd.DataFrame):
+            x = x.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1, errors='ignore')
+            return self._prob_dataframe(x)
+        raise RuntimeError('x must be a pandas.Series or pandas.DataFrame')
+
     def _predict_dataframe(self, x: pd.DataFrame, ):
         try:
-            x = x[self.feature_order[self.dataset_name]]
             tensor = self._get_tensor(x)
             return self.raw_model(tensor)[:, 1].reshape((-1, 1)).round().detach().numpy().reshape(1, -1)[0]
         except (ValueError, KeyError):
@@ -137,6 +146,7 @@ class ANN(ModelAbstract):
             return self._predict_dataframe(self.tratador.encode(x))
 
     def _get_tensor(self, x: pd.DataFrame) -> Tensor:
+        x = x[self.feature_order[self.dataset_name]]
         tensor = torch.from_numpy(x.to_numpy(dtype=float))
         tensor = tensor.float()
         return tensor
@@ -145,3 +155,16 @@ class ANN(ModelAbstract):
         df = pd.DataFrame([row])
         return self._predict_dataframe(df)[0]
         # return self.raw_model(tensor)[:, 1].reshape(-1, 1)
+
+    def _prob_series(self, x: pd.Series):
+        df = pd.DataFrame([x])
+        return self._prob_dataframe(df)[0]
+
+    def _prob_dataframe(self, x: pd.DataFrame):
+        try:
+            tensor = self._get_tensor(x)
+            predict = self.raw_model(tensor)
+            return predict[:, 1].detach().numpy()
+        except (ValueError, KeyError):
+            self.logger.debug('Applying treatment to dataframe.')
+            return self._prob_dataframe(self.tratador.encode(x))

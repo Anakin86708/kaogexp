@@ -241,3 +241,4 @@ cython_debug/
 *.patch
 /patchs/
 **/*.pkl
+/main.rar
