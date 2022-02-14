@@ -69,7 +69,7 @@ threads_num = multiprocessing.cpu_count()
 
 def explicar(item, i, total):
     logging.info('\n' + ('#' * 15) + f' Item {i + 1} of {total} ' + ('#' * 15) + '\n')
-    explicador = KAOGExp(train_data, model, sampler, fixed_cols=fixed_cols, otimizar=True)
+    explicador = KAOGExp(train_data, model, sampler, fixed_cols=fixed_cols, otimizar=False)
     return explicador.explicar(item, metodo=metodo, classe_desejada=classe_desejada,
                                tratador_associado=tratador_associado, normalizador_associado=normalizador_associado)
 
