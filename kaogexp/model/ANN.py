@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import requests
 import torch
+from torch import Tensor
 
 from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.treatment.TreatmentAbstract import TreatmentAbstract
@@ -20,7 +21,57 @@ class ANN(ModelAbstract):
     """
     logger = logging.getLogger(__name__)
 
+    feature_order = {
+        'adult': pd.Index([
+            'age',
+            'fnlwgt',
+            'education-num',
+            'capital-gain',
+            'capital-loss',
+            'hours-per-week',
+            'workclass_Non-Private',
+            'workclass_Private',
+            'marital-status_Married',
+            'marital-status_Non-Married',
+            'occupation_Managerial-Specialist',
+            'occupation_Other',
+            'relationship_Husband',
+            'relationship_Non-Husband',
+            'race_Non-White',
+            'race_White',
+            'sex_Female',
+            'sex_Male',
+            'native-country_Non-US',
+            'native-country_US'
+        ]),
+        'give_me_some_credit': pd.Index([
+            'RevolvingUtilizationOfUnsecuredLines',
+            'age',
+            'NumberOfTime30-59DaysPastDueNotWorse',
+            'DebtRatio',
+            'MonthlyIncome',
+            'NumberOfOpenCreditLinesAndLoans',
+            'NumberOfTimes90DaysLate',
+            'NumberRealEstateLoansOrLines',
+            'NumberOfTime60-89DaysPastDueNotWorse',
+            'NumberOfDependents'
+        ]),
+        'compas': pd.Index([
+            'age',
+            'two_year_recid',
+            'priors_count',
+            'length_of_stay',
+            'c_charge_degree_F',
+            'c_charge_degree_M',
+            'race_African-American',
+            'race_Other',
+            'sex_Female',
+            'sex_Male'
+        ])
+    }
+
     def __init__(self, tratador: TreatmentAbstract, name: str = 'adult'):
+        self.dataset_name = name
         raw_model = self._get_model(name)
         super().__init__(raw_model, tratador)
 
@@ -59,7 +110,12 @@ class ANN(ModelAbstract):
         else:
             ANN.logger.info('Model ANN is already present.')
 
-        return torch.load(path)
+        try:
+            return torch.jit.load(path)
+        except RuntimeError:
+            ANN.logger.error('Error reading model, removing and downloading again')
+            os.remove(path)
+            return ANN._retrieve_model(name)
 
     def predict(self, x: Union[pd.Series, pd.DataFrame]) -> Union[int, np.ndarray]:
         x = x.copy()
@@ -71,16 +127,44 @@ class ANN(ModelAbstract):
             return self._predict_dataframe(x)
         raise RuntimeError('x must be a pandas.Series or pandas.DataFrame')
 
-    def _predict_dataframe(self, x: pd.DataFrame):
+    def prob(self, x: Union[pd.Series, pd.DataFrame]) -> Union[int, np.ndarray]:
+        x = x.copy()
+        if isinstance(x, pd.Series):
+            x = x.drop(ColunaYSingleton().NOME_COLUNA_Y, errors='ignore')
+            return self._prob_series(x)
+        elif isinstance(x, pd.DataFrame):
+            x = x.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1, errors='ignore')
+            return self._prob_dataframe(x)
+        raise RuntimeError('x must be a pandas.Series or pandas.DataFrame')
+
+    def _predict_dataframe(self, x: pd.DataFrame, ):
         try:
-            tensor = torch.from_numpy(x.to_numpy(dtype=float))
-            tensor = tensor.float()
+            tensor = self._get_tensor(x)
             return self.raw_model(tensor)[:, 1].reshape((-1, 1)).round().detach().numpy().reshape(1, -1)[0]
-        except ValueError:
+        except (ValueError, KeyError):
             self.logger.debug('Applying treatment to dataframe.')
             return self._predict_dataframe(self.tratador.encode(x))
+
+    def _get_tensor(self, x: pd.DataFrame) -> Tensor:
+        x = x[self.feature_order[self.dataset_name]]
+        tensor = torch.from_numpy(x.to_numpy(dtype=float))
+        tensor = tensor.float()
+        return tensor
 
     def _predict_series(self, row: pd.Series):
         df = pd.DataFrame([row])
         return self._predict_dataframe(df)[0]
         # return self.raw_model(tensor)[:, 1].reshape(-1, 1)
+
+    def _prob_series(self, x: pd.Series):
+        df = pd.DataFrame([x])
+        return self._prob_dataframe(df)[0]
+
+    def _prob_dataframe(self, x: pd.DataFrame):
+        try:
+            tensor = self._get_tensor(x)
+            predict = self.raw_model(tensor)
+            return predict[:, 1].detach().numpy()
+        except (ValueError, KeyError):
+            self.logger.debug('Applying treatment to dataframe.')
+            return self._prob_dataframe(self.tratador.encode(x))

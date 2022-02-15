@@ -22,9 +22,9 @@ class TestANN(TestCase):
     def test_predict_one_series(self):
         dataset = self._get_dateset()
         item = dataset.dataset(True, True).iloc[1]
-        x = item.drop(ColunaYSingleton.NOME_COLUNA_Y)
+        x = item.drop(ColunaYSingleton().NOME_COLUNA_Y)
         instance = ANN(dataset.tratador)
-        expected = item[ColunaYSingleton.NOME_COLUNA_Y]
+        expected = item[ColunaYSingleton().NOME_COLUNA_Y]
 
         result = instance.predict(x)
 
@@ -33,9 +33,9 @@ class TestANN(TestCase):
     def test_predict_zero_series(self):
         dataset = self._get_dateset()
         item = dataset.dataset(True, True).iloc[2]
-        x = item.drop(ColunaYSingleton.NOME_COLUNA_Y)
+        x = item.drop(ColunaYSingleton().NOME_COLUNA_Y)
         instance = ANN(dataset.tratador)
-        expected = item[ColunaYSingleton.NOME_COLUNA_Y]
+        expected = item[ColunaYSingleton().NOME_COLUNA_Y]
 
         result = instance.predict(x)
 
@@ -45,9 +45,9 @@ class TestANN(TestCase):
         dataset = self._get_dateset()
         df = dataset.dataset(True, True)
         df = df[df['income'] == 1].iloc[:2]
-        x = df.drop(ColunaYSingleton.NOME_COLUNA_Y, axis=1)
+        x = df.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         instance = ANN(dataset.tratador)
-        expected = df[ColunaYSingleton.NOME_COLUNA_Y]
+        expected = df[ColunaYSingleton().NOME_COLUNA_Y]
 
         result = instance.predict(x)
 
@@ -57,13 +57,20 @@ class TestANN(TestCase):
         dataset = self._get_dateset()
         df = dataset.dataset(True, True)
         df = df[df['income'] == 0].iloc[:2]
-        x = df.drop(ColunaYSingleton.NOME_COLUNA_Y, axis=1)
+        x = df.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         instance = ANN(dataset.tratador)
-        expected = df[ColunaYSingleton.NOME_COLUNA_Y]
+        expected = df[ColunaYSingleton().NOME_COLUNA_Y]
 
         result = instance.predict(x)
 
         self.assertTrue((result == expected).all())
+
+    def test_is_correct_features(self):
+        dataset = self._get_dateset()
+        tratador = dataset.tratador
+        df = dataset.dataset(True, True)
+        df = df[df['income'] == 1].iloc[:2]
+        x = df.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
 
     def _get_dateset(self):
         index = ['age', 'workclass', 'fnlwgt', 'education-num', 'marital-status', 'occupation', 'relationship',
@@ -72,7 +79,7 @@ class TestANN(TestCase):
         data.columns = data.columns.str.strip()
         cat_index = pd.Index(['workclass', 'marital-status', 'occupation', 'relationship',
                               'race', 'sex', 'native-country'])
-        ColunaYSingleton.NOME_COLUNA_Y = 'income'
+        ColunaYSingleton().NOME_COLUNA_Y = 'income'
         dataset = DatasetFromMemory(data, cat_index)
         return dataset
 

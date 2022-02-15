@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 from kaog import KAOG
+from sklearn.exceptions import NotFittedError
 
 from kaogexp.data.loader import ColunaYSingleton
 from kaogexp.data.normalizer.NormalizerAbstract import NormalizerAbstract
@@ -154,7 +155,7 @@ class Counterfactual(MethodAbstract):
         try:
             instancia_original = self._remover_normalizacao(self.instancia_original)
             instancia_modificada = self._remover_normalizacao(self.instancia_modificada)
-        except RuntimeError:
+        except (RuntimeError, NotFittedError):
             logging.error("Não foi possível reverter a normalização")
             instancia_original = self.instancia_original
             instancia_modificada = self.instancia_modificada

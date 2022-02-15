@@ -1,6 +1,10 @@
+import logging
 from typing import List, Union, Callable, Iterable
 
+import numpy as np
+
 from kaogexp.explainer.methods.MethodAbstract import MethodAbstract
+from model.ModelAbstract import ModelAbstract
 
 
 class CERScore:
@@ -12,8 +16,11 @@ class CERScore:
     S. Sharma, J. Henderson, and J. Ghosh, “CERTIFAI: A common frame-work  to  provide  explanations  and  analyse  the  fairness  and  robustnessof black-box models,” inProceedings of the Twenty Third InternationalConference on Artificial Intelligence and Statistics, ser. Proceedings ofthe 2020 AAAI/ACM Conference on AI, Ethics, and Society, S. Chiappaand R. Calandra, Eds., vol. 108.    ACM, 2020, pp. 166–172
     """
 
-    def __init__(self, metodo_distancias: Callable):
+    logger = logging.getLogger(__name__)
+
+    def __init__(self, metodo_distancias: Callable, model: ModelAbstract = None):
         self.metodo_distancias = metodo_distancias
+        self.model = model
 
     def calcular(self, x: Iterable[MethodAbstract], distancias: List[float] = None) -> Union[
         float, None]:
@@ -41,8 +48,15 @@ class CERScore:
                 distancias = [self._calcular_distancia(instancia) for instancia in x]
 
             filtred_distances = filter(lambda item: item is not None, distancias)
-            return self._mean(distancias, filtred_distances)
+            try:
+                self.logger.debug(f'Trying to calculate with prob')
+                prob = np.array([self.model.prob(i.instancia_modificada) for i in x])
+                return sum(prob * (1 / distancias))
+            except Exception:
+                self.logger.debug(f'Trying to calculate without prob')
+                return self._mean(distancias, filtred_distances)
         except Exception:
+            self.logger.debug(f'CERScore failed')
             return None
 
     def _mean(self, distancias, filtred_distances):
