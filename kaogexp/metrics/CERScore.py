@@ -51,7 +51,7 @@ class CERScore:
             try:
                 self.logger.debug(f'Trying to calculate with prob')
                 prob = np.array([self.model.prob(i.instancia_modificada) for i in x])
-                return sum(prob * distancias)
+                return sum(prob * (1 / distancias))
             except Exception:
                 self.logger.debug(f'Trying to calculate without prob')
                 return self._mean(distancias, filtred_distances)

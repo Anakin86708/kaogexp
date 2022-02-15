@@ -39,8 +39,11 @@ kaogexp_dists = {}
 for filename in files:
     method, dataset = filename.replace('.csv', '').split('_', 1)
 
-    if method in ('revise'):
+    if method in ('revise', 'cem-vae'):
         continue
+
+    if 'face' in method:
+        method = method.replace('face', 'FACE')
 
     # Get result for KAOGExp based on dataset
     dataset_ = dataset if dataset != 'give-me-some-credit' else 'credit'
@@ -65,6 +68,9 @@ for filename in files:
         data[dataset] = {method: df}
 
 # Iterate over distances
+sns.set(font_scale=1.4)
+sns.set_style("whitegrid")
+sns.set_context("talk")
 for distance in cols_dist:
     for dataset, methods in data.items():
         df = pd.DataFrame()
@@ -79,18 +85,32 @@ for distance in cols_dist:
                 if not dropped_df.empty:
                     method_ = method.replace('_', '-')
                     dataset_ = dataset.replace('_', '-')
-                    dropped_df.to_csv(os.path.join(dir_dropped, f'{method_}_{dataset_}_dropped.csv'))
+                    dropped_df.to_csv(os.path.join(dir_dropped, f'{method_.lower()}_{dataset_.lower()}_dropped.csv'))
 
-                df_cols.name = method
+                if 'face-epsilon' in method.lower():
+                    df_cols.name = 'FACE-EPS'
+                elif 'wachter' in method.lower():
+                    df_cols.name = 'Wachter'
+                else:
+                    df_cols.name = method.upper()
                 df = df.append(df_cols)
             except (ValueError, TypeError):
                 print(f'Error in {method} - {dataset}')
 
         plt.clf()
-        fig = plt.figure()
+        scale_fig = 1.5
+        fig = plt.figure(figsize=(6.4 * scale_fig, 4.8 * scale_fig))
         ax = fig.gca()
-        sns.violinplot(data=df.T, orient='h', ax=ax).set(title=dataset.upper())
+        plt.title(dataset.upper(), fontweight='bold')
+        sns.set(font_scale=1.4)
+        sns.set_style("whitegrid")
+        sns.set_context("talk")
+        sns.violinplot(data=df.T, orient='h', ax=ax, height=5, aspect=2)
         ax.set_xlim(0, 1)
+        for tick in ax.yaxis.get_major_ticks():
+            tick.label.set_fontweight('bold')
+        for tick in ax.xaxis.get_major_ticks():
+            tick.label.set_fontweight('bold')
         fig.tight_layout()
         plt.savefig(os.path.join(fig_dir, f'{distance}_{dataset}.png'))
         plt.close()

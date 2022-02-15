@@ -82,9 +82,9 @@ def main() -> Dict[str, pd.DataFrame]:
 
 
 def calculate_cerscore(cerscore, dataset, filename, method):
+    df = pd.read_csv(os.path.join(dir_carla_results, filename))
+    cerscore_ = calculate_cerscore_for_data(df)
     try:
-        df = pd.read_csv(os.path.join(dir_carla_results, filename))
-        cerscore_ = calculate_cerscore_for_data(df)
         if cerscore_ is not None:
             cerscore[dataset][method] = cerscore_
     except KeyError:
@@ -94,8 +94,11 @@ def calculate_cerscore(cerscore, dataset, filename, method):
 
 def calculate_cerscore_for_data(df: pd.DataFrame):
     try:
-        return df[distances_cols].sum() / num_total_instances
-    except TypeError:
+        # TODO: inserir prob e inverso da distância
+        prob = df['Probability']
+        dist = (1 / df[distances_cols])
+        return dist.apply(lambda x: x * prob).sum()
+    except (TypeError, KeyError):
         logger.error('Empty dataframe for CERScore')
         return None
 
