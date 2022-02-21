@@ -6,11 +6,11 @@ import pickle
 
 import pandas as pd
 
-from main.new_distance import NewDistance
 from metrics.CERScore import CERScore
 from metrics.carla_metrics import CARLADistances
 from metrics.dispersao import Dispersao
 from metrics.proximity import Proximity
+from metrics.util.metrics import MetricCategorical
 from metrics.validity import Validity
 
 
@@ -35,7 +35,7 @@ def save_counterfactuals(name, working_dir, explicacoes):
 def compute_and_save_metrics(name, working_dir, test_dataset, test_data, explicacoes):
     logging.info("Computing metrics")
     logging.basicConfig(level=logging.INFO)
-    dist = NewDistance(test_dataset, test_data.nomes_colunas_categoricas)
+    dist = MetricCategorical(test_dataset, test_data.nomes_colunas_categoricas)
     logging.basicConfig(level=None)
     prox = Proximity(dist.calculate)
     cers = CERScore(dist.calculate)

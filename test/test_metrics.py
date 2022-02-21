@@ -9,7 +9,7 @@ from kaogexp.metrics.CERScore import CERScore
 from kaogexp.metrics.dispersao import Dispersao
 from kaogexp.metrics.proximity import Proximity
 from kaogexp.metrics.validity import Validity
-from main.new_distance import NewDistance
+from metrics.util.metrics import MetricCategorical
 
 
 class FakeCounterfactual:
@@ -36,7 +36,7 @@ class ProximityTest(unittest.TestCase):
         counterfactual = FakeCounterfactual(original, modificada)
         expected = sqrt(2)
 
-        dist = NewDistance(data, pd.Index([]))
+        dist = MetricCategorical(data, pd.Index([]))
         prox = Proximity(dist.calculate)
         result = prox.calcular(counterfactual)
         self.assertEqual(expected, result)
@@ -47,7 +47,7 @@ class ProximityTest(unittest.TestCase):
         data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = sqrt(2)
-        dist = NewDistance(data, pd.Index(['c']))
+        dist = MetricCategorical(data, pd.Index(['c']))
         prox = Proximity(dist.calculate)
         result = prox.calcular(counterfactual)
         self.assertEqual(expected, result)
@@ -58,7 +58,7 @@ class ProximityTest(unittest.TestCase):
         data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = 1
-        dist = NewDistance(data, pd.Index(['c']))
+        dist = MetricCategorical(data, pd.Index(['c']))
         prox = Proximity(dist.calculate)
         result = prox.calcular(counterfactual)
         self.assertEqual(expected, result)
@@ -69,7 +69,7 @@ class ProximityTest(unittest.TestCase):
         data = pd.DataFrame([original, modificada]).drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1)
         counterfactual = FakeCounterfactual(original, modificada)
         expected = 1
-        dist = NewDistance(data, pd.Index(['c']))
+        dist = MetricCategorical(data, pd.Index(['c']))
         prox = Proximity(dist.calculate)
         result = prox.calcular(counterfactual)
         self.assertEqual(expected, result)
@@ -221,7 +221,7 @@ class CERScoreTest(unittest.TestCase):
             pd.Series({'a': 1, 'b': 0, 'c': 0, 'target': 0}),
             pd.Series({'a': 1, 'b': 1, 'c': 1, 'target': 0})
         ])
-        dist = NewDistance(data, pd.Index([]))
+        dist = MetricCategorical(data, pd.Index([]))
         cers = CERScore(dist.calculate)
         result = cers.calcular(counterfactuals)
         self.assertAlmostEqual(expected, result, places=5)

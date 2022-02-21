@@ -15,7 +15,7 @@ from kaogexp.data.loader.DatasetFromMemory import DatasetFromMemory
 from kaogexp.data.sampler.LatinSampler import LatinSampler
 from kaogexp.explainer.KAOGExp import KAOGExp
 from kaogexp.explainer.methods.Counterfactual import Counterfactual
-from main.new_distance import NewDistance
+from metrics.util.metrics import MetricCategorical
 from kaogexp.metrics.CERScore import CERScore
 from kaogexp.metrics.carla_metrics import CARLADistances
 from kaogexp.metrics.dispersao import Dispersao
@@ -72,7 +72,7 @@ for item in explicacoes:
 # %%
 # Métricas
 logging.basicConfig(level=logging.INFO)
-dist = NewDistance(test_data.dataset(), test_data.nomes_colunas_categoricas)
+dist = MetricCategorical(test_data.dataset(), test_data.nomes_colunas_categoricas)
 logging.basicConfig(level=None)
 prox = Proximity(dist.calculate)
 cers = CERScore(dist.calculate, model)

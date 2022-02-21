@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from kaogexp.data.loader import ColunaYSingleton
-from main.new_distance import NewDistance
+from metrics.util.metrics import MetricCategorical
 from util import Data
 
 
@@ -56,7 +56,7 @@ class NewDistanceTest(unittest.TestCase):
         x = data.iloc[0]
         y = data.loc[1]
         cat_cols = instance_adult.nomes_colunas_categoricas
-        instance = NewDistance(data, cat_cols)
+        instance = MetricCategorical(data, cat_cols)
         expected = self.distance_adult
 
         result = instance.calculate(x, y)
@@ -69,7 +69,7 @@ class NewDistanceTest(unittest.TestCase):
         data = Data.iris_dataset().drop(columns=ColunaYSingleton().NOME_COLUNA_Y)
         x: pd.Series = data.loc[0]
         y: pd.Series = data.loc[1]
-        instance = NewDistance(data, pd.Index([]))
+        instance = MetricCategorical(data, pd.Index([]))
         expected = self.distance_iris
         return expected, instance, x, y
 
