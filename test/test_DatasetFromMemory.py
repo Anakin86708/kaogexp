@@ -98,6 +98,22 @@ class DatasetFromMemoryTest(unittest.TestCase):
                     instance.dataset(False).apply(lambda x: x[nomes_cols_normalizar].between(0, 1).all(), axis=1).all()
                 )
 
+    def test_factorized_dataset(self):
+        """Dataset must preserve shape and have all categorical columns as integers when applied factorize"""
+        instance = self.adult_instance
+        colunas_categoricas = instance.nomes_colunas_categoricas
+
+        dataset = instance.dataset(factorized=True)
+
+        # assert all with the same dtype as int
+        self.assertEqual(dataset[colunas_categoricas].shape, dataset[colunas_categoricas].select_dtypes(['int']).shape)
+
+    def test_both_encoded_and_factorized(self):
+        """Must raise Exception when both encoded and factorized are used"""
+        instance = self.adult_instance
+
+        self.assertRaises(RuntimeError, instance.dataset, True, True, True)
+
     ################
     # Util methods #
     ################

@@ -4,7 +4,13 @@ import numpy as np
 import pandas as pd
 
 
-class NewDistance:
+class MetricCategorical:
+    """
+    Measure the distance between instances, accounting for categorical data.
+
+    An instance is encoded with dummies and those labeled as 1 are converted to sqrt(.5). It allows the algorithm to
+    perform euclidean distance and categorical distances, being 1 when different and 0 when equal.
+    """
 
     def __init__(self, data: pd.DataFrame, cat_cols: pd.Index):
         """
