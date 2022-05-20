@@ -114,7 +114,9 @@ class DatasetTreatmentTest(unittest.TestCase):
 
         pd.testing.assert_index_equal(dataset.tratador.nomes_colunas_encoded, encoded.columns, check_order=False)
         self.assertIn(ColunaYSingleton().NOME_COLUNA_Y, encoded.columns)
-        self.assertEqual(0, encoded.select_dtypes(["O", "category"]).shape[1])
+        self.assertEqual(0,
+                         encoded.drop(ColunaYSingleton().NOME_COLUNA_Y, axis=1).select_dtypes(["O", "category"]).shape[
+                             1])
 
     @expectedFailure
     def test_encode_adult_using_dataset_fail(self):
