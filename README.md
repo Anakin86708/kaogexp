@@ -3,6 +3,8 @@
 Scientific research project.
 Developed with Prof. Dr. João Roberto Bertini Jr.
 
+The final paper was presented in the 2022 IEEE International Conference on Fuzzy Systems (FUZZ-IEEE) and can be accessed [here](https://ieeexplore.ieee.org/document/9882751).
+
 ## Dependencies
 
 All the project dependencies can be found
